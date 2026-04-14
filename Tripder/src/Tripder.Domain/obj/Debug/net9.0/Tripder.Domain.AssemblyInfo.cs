@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tripder.Domain")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7e9e36346733cda75a4c9eeae4a329ddb6984494")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+c9d58ad149c4d9467b73c7a4adbaf0de2f9f19a0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tripder.Domain")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tripder.Domain")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
