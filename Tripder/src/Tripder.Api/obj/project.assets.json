@@ -973,19 +973,19 @@
     ]
   },
   "packageFolders": {
-    "/Users/damian/.nuget/packages/": {}
+    "C:\\Users\\Admin\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Api/Tripder.Api.csproj",
+      "projectUniqueName": "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Api\\Tripder.Api.csproj",
       "projectName": "Tripder.Api",
-      "projectPath": "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Api/Tripder.Api.csproj",
-      "packagesPath": "/Users/damian/.nuget/packages/",
-      "outputPath": "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Api/obj/",
+      "projectPath": "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Api\\Tripder.Api.csproj",
+      "packagesPath": "C:\\Users\\Admin\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Api\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "/Users/damian/.nuget/NuGet/NuGet.Config"
+        "C:\\Users\\Admin\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -997,11 +997,11 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "projectReferences": {
-            "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/Tripder.Application.csproj": {
-              "projectPath": "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/Tripder.Application.csproj"
+            "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Application\\Tripder.Application.csproj": {
+              "projectPath": "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Application\\Tripder.Application.csproj"
             },
-            "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Infrastructure/Tripder.Infrastructure.csproj": {
-              "projectPath": "/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Infrastructure/Tripder.Infrastructure.csproj"
+            "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Infrastructure\\Tripder.Infrastructure.csproj": {
+              "projectPath": "C:\\Users\\Admin\\RiderProjects\\projekt_biznesowy\\Tripder\\src\\Tripder.Infrastructure\\Tripder.Infrastructure.csproj"
             }
           }
         }
@@ -1016,7 +1016,7 @@
         "auditLevel": "low",
         "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.300"
+      "SdkAnalysisLevel": "10.0.200"
     },
     "frameworks": {
       "net9.0": {
@@ -1042,6 +1042,24 @@
         ],
         "assetTargetFallback": true,
         "warn": true,
+        "downloadDependencies": [
+          {
+            "name": "Microsoft.AspNetCore.App.Ref",
+            "version": "[9.0.14, 9.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Host.win-x64",
+            "version": "[9.0.14, 9.0.14]"
+          },
+          {
+            "name": "Microsoft.NETCore.App.Ref",
+            "version": "[9.0.14, 9.0.14]"
+          },
+          {
+            "name": "Microsoft.WindowsDesktop.App.Ref",
+            "version": "[9.0.14, 9.0.14]"
+          }
+        ],
         "frameworkReferences": {
           "Microsoft.AspNetCore.App": {
             "privateAssets": "none"
@@ -1050,7 +1068,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.310/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Users\\Admin\\.dotnet\\sdk\\10.0.201/PortableRuntimeIdentifierGraph.json"
       }
     }
   }
