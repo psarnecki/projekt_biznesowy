@@ -1,6 +1,6 @@
-﻿using AttractionDefinition.Dtos;
+﻿using Tripder.Application.AttractionDefinition.DTOs;
 
-namespace AttractionDefinition.Interfaces;
+namespace Tripder.Application.AttractionDefinition.Repositories;
 
 public interface IAttractionRepository
 {

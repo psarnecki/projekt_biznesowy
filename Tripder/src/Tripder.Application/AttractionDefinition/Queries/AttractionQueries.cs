@@ -1,8 +1,8 @@
-﻿using AttractionDefinition.Dtos;
-using AttractionDefinition.Interfaces;
-using MediatR;
+﻿using MediatR;
+using Tripder.Application.AttractionDefinition.DTOs;
+using Tripder.Application.AttractionDefinition.Repositories;
 
-namespace AttractionDefinition.Queries;
+namespace Tripder.Application.AttractionDefinition.Queries;
 
 // ───────────────────────────────────────────────
 // GET ATTRACTION BY ID

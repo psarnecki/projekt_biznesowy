@@ -1,4 +1,4 @@
-﻿namespace AttractionDefinition.Dtos;
+﻿namespace Tripder.Application.AttractionDefinition.DTOs;
 
 public sealed record AttractionDetailDto(
     Guid Id,

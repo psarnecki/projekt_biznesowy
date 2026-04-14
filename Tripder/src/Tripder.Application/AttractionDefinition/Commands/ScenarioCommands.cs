@@ -1,8 +1,8 @@
-﻿using AttractionDefinition.Interfaces;
-using FluentValidation;
+﻿using FluentValidation;
 using MediatR;
+using Tripder.Application.AttractionDefinition.Repositories;
 
-namespace AttractionDefinition.Commands;
+namespace Tripder.Application.AttractionDefinition.Commands;
 
 // ───────────────────────────────────────────────
 // CREATE SCENARIO
