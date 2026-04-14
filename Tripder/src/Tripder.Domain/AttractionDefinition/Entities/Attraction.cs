@@ -1,4 +1,5 @@
 using Tripder.Domain.AttractionDefinition.Enums;
+using Tripder.Domain.AttractionDefinition.ValueObjects;
 using Tripder.Domain.Common;
 
 namespace Tripder.Domain.AttractionDefinition.Entities;
@@ -8,9 +9,7 @@ public class Attraction : AggregateRoot
     public string Name { get; private set; } = string.Empty;
     public Guid CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;
-    public string LocationName { get; private set; } = string.Empty;
-    public double Latitude { get; private set; }
-    public double Longitude { get; private set; }
+    public Location Location { get; private set; } = null!;
     public int? Capacity { get; private set; }
     public DateOnly? CatalogFrom { get; private set; }
     public DateOnly? CatalogTo { get; private set; }
@@ -31,9 +30,7 @@ public class Attraction : AggregateRoot
         Guid id,
         string name,
         Guid categoryId,
-        string locationName,
-        double latitude,
-        double longitude,
+        Location location,
         int? capacity = null,
         DateOnly? catalogFrom = null,
         DateOnly? catalogTo = null)
@@ -41,9 +38,7 @@ public class Attraction : AggregateRoot
         Id = id;
         Name = name;
         CategoryId = categoryId;
-        LocationName = locationName;
-        Latitude = latitude;
-        Longitude = longitude;
+        Location = location;
         Capacity = capacity;
         CatalogFrom = catalogFrom;
         CatalogTo = catalogTo;
@@ -119,10 +114,10 @@ public class Attraction : AggregateRoot
     public double DistanceKmTo(double lat, double lon)
     {
         const double R = 6371;
-        var dLat = ToRad(lat - Latitude);
-        var dLon = ToRad(lon - Longitude);
+        var dLat = ToRad(lat - Location.Latitude);
+        var dLon = ToRad(lon - Location.Longitude);
         var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRad(Latitude)) * Math.Cos(ToRad(lat)) *
+                Math.Cos(ToRad(Location.Latitude)) * Math.Cos(ToRad(lat)) *
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }

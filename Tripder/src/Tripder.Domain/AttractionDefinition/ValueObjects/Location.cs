@@ -7,9 +7,14 @@ namespace Tripder.Domain.AttractionDefinition.ValueObjects;
 // Dwie lokalizacje z tymi samymi współrzędnymi to z biznesowego punktu widzenia to samo miejsce.
 public class Location : ValueObject
 {
-    public double Latitude { get; }
-    public double Longitude { get; }
-    public string LocationName { get; }
+    public double Latitude { get; private set; }
+    public double Longitude { get; private set; }
+    public string LocationName { get; private set; } = string.Empty;
+
+    // pusty konstruktor tylko dla EF / serializacji — normalnie i tak tworzysz przez ten drugi z walidacją
+    private Location()
+    {
+    }
 
     // Konstruktor wymusza walidację przy samym tworzeniu obiektu.
     // Dzięki temu obiekt Location NIGDY nie znajdzie się w niepoprawnym stanie.
@@ -18,7 +23,7 @@ public class Location : ValueObject
     {
         if (latitude < -90 || latitude > 90)
             throw new ArgumentOutOfRangeException(nameof(latitude), "Latitude musi być w przedziale od -90 do 90.");
-            
+
         if (longitude < -180 || longitude > 180)
             throw new ArgumentOutOfRangeException(nameof(longitude), "Longitude musi być w przedziale od -180 do 180.");
 
