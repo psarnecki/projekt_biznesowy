@@ -1,0 +1,80 @@
+# Tripder — .NET 9, ASP.NET Core, Rider / Visual Studio
+# https://github.com/github/gitignore/blob/main/VisualStudio.gitignore
+
+## Build output
+[Bb]in/
+[Oo]bj/
+[Oo]ut/
+[Ll]og/
+[Ll]ogs/
+artifacts/
+
+## Visual Studio / MSBuild
+.vs/
+*.rsuser
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.pidb
+*.svclog
+*.binlog
+project.lock.json
+project.fragment.lock.json
+Generated\ Files/
+
+## JetBrains Rider / IntelliJ
+.idea/
+*.sln.iml
+*.DotSettings.user
+_ReSharper*/
+*.[Rr]e[Ss]harper
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+
+## Test & coverage
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+*.VisualState.xml
+TestResult.xml
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+BenchmarkDotNet.Artifacts/
+
+## ASP.NET / lokalne sekrety (nie commituj haseł / connection stringów)
+**/appsettings.*.local.json
+**/appsettings.Local.json
+**/secrets.json
+
+## Bazy i pliki robocze (lokalny SQLite itd.)
+*.db
+*.db-shm
+*.db-wal
+app.db
+
+## Logs (NLog / Serilog itp.)
+**/logs/
+
+## macOS / Windows
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+## Narzędzia / edytor
+.vscode/
+*.code-workspace
+.history/
+
+## Publish / paczki wdrożeniowe
+*.publishproj
+*.pubxml
+*.azurePubxml
+PublishScripts/
+publish/
