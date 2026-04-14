@@ -1,7 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tripder.Api.Models;
-using Tripder.Application.AttractionDefinition;
+using Tripder.Application.AttractionDefinition.Commands;
+using Tripder.Application.AttractionDefinition.Queries;
 using Tripder.Domain.AttractionDefinition.Enums;
 
 namespace Tripder.Api.Controllers;
@@ -22,7 +23,7 @@ public class AttractionsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status200OK)]
     public async Task<IActionResult> GetAll([FromQuery] AttractionState? state, CancellationToken ct)
     {
-        var result = await _mediator.Send(new GetAllAttractionsQuery(state), ct);
+        var result = await _mediator.Send(new GetAllAttractionsQuery(state?.ToString()), ct);
         return Ok(result);
     }
 

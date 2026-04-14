@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Tripder.Application.AttractionDefinition;
+using Tripder.Application.AttractionDefinition.Commands;
+using Tripder.Application.AttractionDefinition.Queries;
 
 namespace Tripder.Api.Controllers;
 
@@ -45,7 +46,7 @@ public class RulesController : ControllerBase
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Update(Guid id, [FromBody] UpdateRuleDefinitionCommand body, CancellationToken ct)
     {
-        if (id != body.Id) return BadRequest("Id w URL musi być takie samo jak w body.");
+        if (id != body.RuleId) return BadRequest("Id w URL musi być takie samo jak w body.");
         await _mediator.Send(body, ct);
         return NoContent();
     }

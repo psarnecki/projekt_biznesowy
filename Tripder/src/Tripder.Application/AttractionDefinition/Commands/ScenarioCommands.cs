@@ -5,21 +5,21 @@ using Tripder.Application.AttractionDefinition.Repositories;
 namespace Tripder.Application.AttractionDefinition.Commands;
 
 // ───────────────────────────────────────────────
-// CREATE SCENARIO
+// ADD SCENARIO
 // ───────────────────────────────────────────────
 
-public sealed record CreateScenarioCommand(
+public sealed record AddScenarioCommand(
     Guid AttractionId,
     string Name,
     string Description,
     int DurationMinutes
 ) : IRequest<Guid>;
 
-public sealed class CreateScenarioCommandHandler(
+public sealed class AddScenarioCommandHandler(
     IScenarioRepository scenarioRepo
-) : IRequestHandler<CreateScenarioCommand, Guid>
+) : IRequestHandler<AddScenarioCommand, Guid>
 {
-    public async Task<Guid> Handle(CreateScenarioCommand cmd, CancellationToken ct)
+    public async Task<Guid> Handle(AddScenarioCommand cmd, CancellationToken ct)
     {
         var id = Guid.NewGuid();
         await scenarioRepo.AddAsync(new NewScenarioData(
@@ -34,9 +34,9 @@ public sealed class CreateScenarioCommandHandler(
     }
 }
 
-public sealed class CreateScenarioCommandValidator : AbstractValidator<CreateScenarioCommand>
+public sealed class AddScenarioCommandValidator : AbstractValidator<AddScenarioCommand>
 {
-    public CreateScenarioCommandValidator(IAttractionRepository attractionRepo)
+    public AddScenarioCommandValidator(IAttractionRepository attractionRepo)
     {
         RuleFor(x => x.AttractionId)
             .NotEmpty()
@@ -58,10 +58,99 @@ public sealed class CreateScenarioCommandValidator : AbstractValidator<CreateSce
 }
 
 // ───────────────────────────────────────────────
+// UPDATE SCENARIO
+// ───────────────────────────────────────────────
+
+public sealed record UpdateScenarioCommand(
+    Guid AttractionId,
+    Guid ScenarioId,
+    string Name,
+    string Description,
+    int DurationMinutes
+) : IRequest;
+
+public sealed class UpdateScenarioCommandHandler(
+    IScenarioRepository scenarioRepo
+) : IRequestHandler<UpdateScenarioCommand>
+{
+    public async Task Handle(UpdateScenarioCommand cmd, CancellationToken ct)
+    {
+        await scenarioRepo.UpdateAsync(new UpdateScenarioData(
+            cmd.ScenarioId,
+            cmd.Name,
+            cmd.Description,
+            cmd.DurationMinutes
+        ), ct);
+    }
+}
+
+public sealed class UpdateScenarioCommandValidator : AbstractValidator<UpdateScenarioCommand>
+{
+    public UpdateScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
+        IScenarioRepository scenarioRepo)
+    {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
+        RuleFor(x => x.ScenarioId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))
+            .WithMessage("Scenariusz o podanym Id nie istnieje.");
+
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Nazwa scenariusza jest wymagana.")
+            .MaximumLength(200);
+
+        RuleFor(x => x.Description)
+            .NotEmpty().WithMessage("Opis scenariusza jest wymagany.")
+            .MaximumLength(2000);
+
+        RuleFor(x => x.DurationMinutes)
+            .GreaterThan(0).WithMessage("Czas trwania musi być wartością dodatnią.")
+            .LessThanOrEqualTo(1440).WithMessage("Czas trwania nie może przekraczać 1440 minut (24h).");
+    }
+}
+
+// ───────────────────────────────────────────────
+// REMOVE SCENARIO
+// ───────────────────────────────────────────────
+
+public sealed record RemoveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
+
+public sealed class RemoveScenarioCommandHandler(
+    IScenarioRepository scenarioRepo
+) : IRequestHandler<RemoveScenarioCommand>
+{
+    public async Task Handle(RemoveScenarioCommand cmd, CancellationToken ct)
+        => await scenarioRepo.DeleteAsync(cmd.ScenarioId, ct);
+}
+
+public sealed class RemoveScenarioCommandValidator : AbstractValidator<RemoveScenarioCommand>
+{
+    public RemoveScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
+        IScenarioRepository scenarioRepo)
+    {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
+        RuleFor(x => x.ScenarioId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))
+            .WithMessage("Scenariusz o podanym Id nie istnieje.");
+    }
+}
+
+// ───────────────────────────────────────────────
 // PUBLISH SCENARIO (Draft → Catalog)
 // ───────────────────────────────────────────────
 
-public sealed record PublishScenarioCommand(Guid ScenarioId) : IRequest;
+public sealed record PublishScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class PublishScenarioCommandHandler(
     IScenarioRepository scenarioRepo
@@ -86,7 +175,7 @@ public sealed class PublishScenarioCommandValidator : AbstractValidator<PublishS
 // ARCHIVE SCENARIO
 // ───────────────────────────────────────────────
 
-public sealed record ArchiveScenarioCommand(Guid ScenarioId) : IRequest;
+public sealed record ArchiveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class ArchiveScenarioCommandHandler(
     IScenarioRepository scenarioRepo
@@ -108,84 +197,113 @@ public sealed class ArchiveScenarioCommandValidator : AbstractValidator<ArchiveS
 }
 
 // ───────────────────────────────────────────────
-// ASSIGN TAG TO SCENARIO
+// ADD TAG TO SCENARIO (by tag name)
 // ───────────────────────────────────────────────
 
-public sealed record AssignTagToScenarioCommand(Guid ScenarioId, Guid TagId) : IRequest;
+public sealed record AddTagToScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
-public sealed class AssignTagToScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
-) : IRequestHandler<AssignTagToScenarioCommand>
+public sealed class AddTagToScenarioCommandHandler(
+    IScenarioRepository scenarioRepo,
+    ITagRepository tagRepo
+) : IRequestHandler<AddTagToScenarioCommand>
 {
-    public async Task Handle(AssignTagToScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.AssignTagAsync(cmd.ScenarioId, cmd.TagId, ct);
+    public async Task Handle(AddTagToScenarioCommand cmd, CancellationToken ct)
+    {
+        var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
+        await scenarioRepo.AssignTagAsync(cmd.ScenarioId, tagId, ct);
+    }
 }
 
-public sealed class AssignTagToScenarioCommandValidator : AbstractValidator<AssignTagToScenarioCommand>
+public sealed class AddTagToScenarioCommandValidator : AbstractValidator<AddTagToScenarioCommand>
 {
-    public AssignTagToScenarioCommandValidator(
-        IScenarioRepository scenarioRepo,
-        ITagRepository tagRepo)
+    public AddTagToScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
+        IScenarioRepository scenarioRepo)
     {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
         RuleFor(x => x.ScenarioId)
             .NotEmpty()
             .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))
             .WithMessage("Scenariusz o podanym Id nie istnieje.");
 
-        RuleFor(x => x.TagId)
-            .NotEmpty()
-            .MustAsync(async (id, ct) => await tagRepo.ExistsAsync(id, ct))
-            .WithMessage("Tag o podanym Id nie istnieje.");
+        RuleFor(x => x.TagName)
+            .NotEmpty().WithMessage("Nazwa tagu jest wymagana.")
+            .MaximumLength(50);
     }
 }
 
 // ───────────────────────────────────────────────
-// REMOVE TAG FROM SCENARIO
+// REMOVE TAG FROM SCENARIO (by tag name)
 // ───────────────────────────────────────────────
 
-public sealed record RemoveTagFromScenarioCommand(Guid ScenarioId, Guid TagId) : IRequest;
+public sealed record RemoveTagFromScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IScenarioRepository scenarioRepo,
+    ITagRepository tagRepo
 ) : IRequestHandler<RemoveTagFromScenarioCommand>
 {
     public async Task Handle(RemoveTagFromScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.RemoveTagAsync(cmd.ScenarioId, cmd.TagId, ct);
+    {
+        var tagId = await tagRepo.GetIdByNameAsync(cmd.TagName, ct);
+        if (tagId.HasValue)
+        {
+            await scenarioRepo.RemoveTagAsync(cmd.ScenarioId, tagId.Value, ct);
+        }
+    }
 }
 
 public sealed class RemoveTagFromScenarioCommandValidator : AbstractValidator<RemoveTagFromScenarioCommand>
 {
-    public RemoveTagFromScenarioCommandValidator(IScenarioRepository scenarioRepo)
+    public RemoveTagFromScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
+        IScenarioRepository scenarioRepo)
     {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
         RuleFor(x => x.ScenarioId)
             .NotEmpty()
             .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))
             .WithMessage("Scenariusz o podanym Id nie istnieje.");
 
-        RuleFor(x => x.TagId).NotEmpty();
+        RuleFor(x => x.TagName)
+            .NotEmpty().WithMessage("Nazwa tagu jest wymagana.");
     }
 }
 
 // ───────────────────────────────────────────────
-// ASSIGN RULE TO SCENARIO
+// ATTACH RULE TO SCENARIO
 // ───────────────────────────────────────────────
 
-public sealed record AssignRuleToScenarioCommand(Guid ScenarioId, Guid RuleId) : IRequest;
+public sealed record AttachRuleToScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
-public sealed class AssignRuleToScenarioCommandHandler(
+public sealed class AttachRuleToScenarioCommandHandler(
     IScenarioRepository scenarioRepo
-) : IRequestHandler<AssignRuleToScenarioCommand>
+) : IRequestHandler<AttachRuleToScenarioCommand>
 {
-    public async Task Handle(AssignRuleToScenarioCommand cmd, CancellationToken ct)
+    public async Task Handle(AttachRuleToScenarioCommand cmd, CancellationToken ct)
         => await scenarioRepo.AssignRuleAsync(cmd.ScenarioId, cmd.RuleId, ct);
 }
 
-public sealed class AssignRuleToScenarioCommandValidator : AbstractValidator<AssignRuleToScenarioCommand>
+public sealed class AttachRuleToScenarioCommandValidator : AbstractValidator<AttachRuleToScenarioCommand>
 {
-    public AssignRuleToScenarioCommandValidator(
+    public AttachRuleToScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
         IScenarioRepository scenarioRepo,
         IRuleDefinitionRepository ruleRepo)
     {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
         RuleFor(x => x.ScenarioId)
             .NotEmpty()
             .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))
@@ -199,23 +317,30 @@ public sealed class AssignRuleToScenarioCommandValidator : AbstractValidator<Ass
 }
 
 // ───────────────────────────────────────────────
-// REMOVE RULE FROM SCENARIO
+// DETACH RULE FROM SCENARIO
 // ───────────────────────────────────────────────
 
-public sealed record RemoveRuleFromScenarioCommand(Guid ScenarioId, Guid RuleId) : IRequest;
+public sealed record DetachRuleFromScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
-public sealed class RemoveRuleFromScenarioCommandHandler(
+public sealed class DetachRuleFromScenarioCommandHandler(
     IScenarioRepository scenarioRepo
-) : IRequestHandler<RemoveRuleFromScenarioCommand>
+) : IRequestHandler<DetachRuleFromScenarioCommand>
 {
-    public async Task Handle(RemoveRuleFromScenarioCommand cmd, CancellationToken ct)
+    public async Task Handle(DetachRuleFromScenarioCommand cmd, CancellationToken ct)
         => await scenarioRepo.RemoveRuleAsync(cmd.ScenarioId, cmd.RuleId, ct);
 }
 
-public sealed class RemoveRuleFromScenarioCommandValidator : AbstractValidator<RemoveRuleFromScenarioCommand>
+public sealed class DetachRuleFromScenarioCommandValidator : AbstractValidator<DetachRuleFromScenarioCommand>
 {
-    public RemoveRuleFromScenarioCommandValidator(IScenarioRepository scenarioRepo)
+    public DetachRuleFromScenarioCommandValidator(
+        IAttractionRepository attractionRepo,
+        IScenarioRepository scenarioRepo)
     {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
         RuleFor(x => x.ScenarioId)
             .NotEmpty()
             .MustAsync(async (id, ct) => await scenarioRepo.ExistsAsync(id, ct))

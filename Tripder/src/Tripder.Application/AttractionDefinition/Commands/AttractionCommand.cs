@@ -81,6 +81,109 @@ public sealed class CreateAttractionCommandValidator : AbstractValidator<CreateA
 }
 
 // ───────────────────────────────────────────────
+// UPDATE ATTRACTION
+// ───────────────────────────────────────────────
+
+public sealed record UpdateAttractionCommand(
+    Guid Id,
+    string Name,
+    Guid CategoryId,
+    string LocationName,
+    float Latitude,
+    float Longitude,
+    int? Capacity,
+    DateOnly? CatalogFrom,
+    DateOnly? CatalogTo
+) : IRequest;
+
+public sealed class UpdateAttractionCommandHandler(
+    IAttractionRepository attractionRepo
+) : IRequestHandler<UpdateAttractionCommand>
+{
+    public async Task Handle(UpdateAttractionCommand cmd, CancellationToken ct)
+    {
+        await attractionRepo.UpdateAsync(new UpdateAttractionData(
+            cmd.Id,
+            cmd.Name,
+            cmd.CategoryId,
+            cmd.LocationName,
+            cmd.Latitude,
+            cmd.Longitude,
+            cmd.Capacity,
+            cmd.CatalogFrom,
+            cmd.CatalogTo
+        ), ct);
+    }
+}
+
+public sealed class UpdateAttractionCommandValidator : AbstractValidator<UpdateAttractionCommand>
+{
+    public UpdateAttractionCommandValidator(
+        IAttractionRepository attractionRepo,
+        ICategoryRepository categoryRepo)
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("Nazwa atrakcji jest wymagana.")
+            .MaximumLength(200).WithMessage("Nazwa atrakcji nie może przekraczać 200 znaków.")
+            .MustAsync(async (cmd, name, ct) => !await attractionRepo.NameExistsAsync(name, cmd.Id, ct))
+            .WithMessage("Atrakcja o podanej nazwie już istnieje.");
+
+        RuleFor(x => x.CategoryId)
+            .NotEmpty().WithMessage("Kategoria jest wymagana.")
+            .MustAsync(async (id, ct) => await categoryRepo.ExistsAsync(id, ct))
+            .WithMessage("Podana kategoria nie istnieje.");
+
+        RuleFor(x => x.LocationName)
+            .NotEmpty().WithMessage("Nazwa lokalizacji jest wymagana.")
+            .MaximumLength(300);
+
+        RuleFor(x => x.Latitude)
+            .InclusiveBetween(-90f, 90f).WithMessage("Szerokość geograficzna musi być w zakresie -90 do 90.");
+
+        RuleFor(x => x.Longitude)
+            .InclusiveBetween(-180f, 180f).WithMessage("Długość geograficzna musi być w zakresie -180 do 180.");
+
+        RuleFor(x => x.Capacity)
+            .GreaterThan(0).When(x => x.Capacity.HasValue)
+            .WithMessage("Pojemność musi być wartością dodatnią.");
+
+        RuleFor(x => x.CatalogTo)
+            .GreaterThan(x => x.CatalogFrom).When(x => x.CatalogFrom.HasValue && x.CatalogTo.HasValue)
+            .WithMessage("Data końca katalogu musi być późniejsza niż data początku.");
+    }
+}
+
+// ───────────────────────────────────────────────
+// DELETE ATTRACTION
+// ───────────────────────────────────────────────
+
+public sealed record DeleteAttractionCommand(Guid Id) : IRequest;
+
+public sealed class DeleteAttractionCommandHandler(
+    IAttractionRepository attractionRepo
+) : IRequestHandler<DeleteAttractionCommand>
+{
+    public async Task Handle(DeleteAttractionCommand cmd, CancellationToken ct)
+        => await attractionRepo.DeleteAsync(cmd.Id, ct);
+}
+
+public sealed class DeleteAttractionCommandValidator : AbstractValidator<DeleteAttractionCommand>
+{
+    public DeleteAttractionCommandValidator(IAttractionRepository attractionRepo)
+    {
+        RuleFor(x => x.Id)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+    }
+}
+
+// ───────────────────────────────────────────────
 // PUBLISH ATTRACTION (Draft → Catalog)
 // ───────────────────────────────────────────────
 
@@ -164,49 +267,57 @@ public sealed class SetAttractionCatalogWindowCommandValidator : AbstractValidat
 }
 
 // ───────────────────────────────────────────────
-// ASSIGN TAG TO ATTRACTION
+// ADD TAG TO ATTRACTION (by tag name)
 // ───────────────────────────────────────────────
 
-public sealed record AssignTagToAttractionCommand(Guid AttractionId, Guid TagId) : IRequest;
+public sealed record AddTagToAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
-public sealed class AssignTagToAttractionCommandHandler(
-    IAttractionRepository attractionRepo
-) : IRequestHandler<AssignTagToAttractionCommand>
+public sealed class AddTagToAttractionCommandHandler(
+    IAttractionRepository attractionRepo,
+    ITagRepository tagRepo
+) : IRequestHandler<AddTagToAttractionCommand>
 {
-    public async Task Handle(AssignTagToAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.AssignTagAsync(cmd.AttractionId, cmd.TagId, ct);
+    public async Task Handle(AddTagToAttractionCommand cmd, CancellationToken ct)
+    {
+        var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
+        await attractionRepo.AssignTagAsync(cmd.AttractionId, tagId, ct);
+    }
 }
 
-public sealed class AssignTagToAttractionCommandValidator : AbstractValidator<AssignTagToAttractionCommand>
+public sealed class AddTagToAttractionCommandValidator : AbstractValidator<AddTagToAttractionCommand>
 {
-    public AssignTagToAttractionCommandValidator(
-        IAttractionRepository attractionRepo,
-        ITagRepository tagRepo)
+    public AddTagToAttractionCommandValidator(IAttractionRepository attractionRepo)
     {
         RuleFor(x => x.AttractionId)
             .NotEmpty()
             .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
             .WithMessage("Atrakcja o podanym Id nie istnieje.");
 
-        RuleFor(x => x.TagId)
-            .NotEmpty()
-            .MustAsync(async (id, ct) => await tagRepo.ExistsAsync(id, ct))
-            .WithMessage("Tag o podanym Id nie istnieje.");
+        RuleFor(x => x.TagName)
+            .NotEmpty().WithMessage("Nazwa tagu jest wymagana.")
+            .MaximumLength(50);
     }
 }
 
 // ───────────────────────────────────────────────
-// REMOVE TAG FROM ATTRACTION
+// REMOVE TAG FROM ATTRACTION (by tag name)
 // ───────────────────────────────────────────────
 
-public sealed record RemoveTagFromAttractionCommand(Guid AttractionId, Guid TagId) : IRequest;
+public sealed record RemoveTagFromAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IAttractionRepository attractionRepo,
+    ITagRepository tagRepo
 ) : IRequestHandler<RemoveTagFromAttractionCommand>
 {
     public async Task Handle(RemoveTagFromAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.RemoveTagAsync(cmd.AttractionId, cmd.TagId, ct);
+    {
+        var tagId = await tagRepo.GetIdByNameAsync(cmd.TagName, ct);
+        if (tagId.HasValue)
+        {
+            await attractionRepo.RemoveTagAsync(cmd.AttractionId, tagId.Value, ct);
+        }
+    }
 }
 
 public sealed class RemoveTagFromAttractionCommandValidator : AbstractValidator<RemoveTagFromAttractionCommand>
@@ -218,27 +329,28 @@ public sealed class RemoveTagFromAttractionCommandValidator : AbstractValidator<
             .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
             .WithMessage("Atrakcja o podanym Id nie istnieje.");
 
-        RuleFor(x => x.TagId).NotEmpty();
+        RuleFor(x => x.TagName)
+            .NotEmpty().WithMessage("Nazwa tagu jest wymagana.");
     }
 }
 
 // ───────────────────────────────────────────────
-// ASSIGN RULE TO ATTRACTION
+// ATTACH RULE TO ATTRACTION
 // ───────────────────────────────────────────────
 
-public sealed record AssignRuleToAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
+public sealed record AttachRuleToAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
-public sealed class AssignRuleToAttractionCommandHandler(
+public sealed class AttachRuleToAttractionCommandHandler(
     IAttractionRepository attractionRepo
-) : IRequestHandler<AssignRuleToAttractionCommand>
+) : IRequestHandler<AttachRuleToAttractionCommand>
 {
-    public async Task Handle(AssignRuleToAttractionCommand cmd, CancellationToken ct)
+    public async Task Handle(AttachRuleToAttractionCommand cmd, CancellationToken ct)
         => await attractionRepo.AssignRuleAsync(cmd.AttractionId, cmd.RuleId, ct);
 }
 
-public sealed class AssignRuleToAttractionCommandValidator : AbstractValidator<AssignRuleToAttractionCommand>
+public sealed class AttachRuleToAttractionCommandValidator : AbstractValidator<AttachRuleToAttractionCommand>
 {
-    public AssignRuleToAttractionCommandValidator(
+    public AttachRuleToAttractionCommandValidator(
         IAttractionRepository attractionRepo,
         IRuleDefinitionRepository ruleRepo)
     {
@@ -255,22 +367,22 @@ public sealed class AssignRuleToAttractionCommandValidator : AbstractValidator<A
 }
 
 // ───────────────────────────────────────────────
-// REMOVE RULE FROM ATTRACTION
+// DETACH RULE FROM ATTRACTION
 // ───────────────────────────────────────────────
 
-public sealed record RemoveRuleFromAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
+public sealed record DetachRuleFromAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
-public sealed class RemoveRuleFromAttractionCommandHandler(
+public sealed class DetachRuleFromAttractionCommandHandler(
     IAttractionRepository attractionRepo
-) : IRequestHandler<RemoveRuleFromAttractionCommand>
+) : IRequestHandler<DetachRuleFromAttractionCommand>
 {
-    public async Task Handle(RemoveRuleFromAttractionCommand cmd, CancellationToken ct)
+    public async Task Handle(DetachRuleFromAttractionCommand cmd, CancellationToken ct)
         => await attractionRepo.RemoveRuleAsync(cmd.AttractionId, cmd.RuleId, ct);
 }
 
-public sealed class RemoveRuleFromAttractionCommandValidator : AbstractValidator<RemoveRuleFromAttractionCommand>
+public sealed class DetachRuleFromAttractionCommandValidator : AbstractValidator<DetachRuleFromAttractionCommand>
 {
-    public RemoveRuleFromAttractionCommandValidator(IAttractionRepository attractionRepo)
+    public DetachRuleFromAttractionCommandValidator(IAttractionRepository attractionRepo)
     {
         RuleFor(x => x.AttractionId)
             .NotEmpty()

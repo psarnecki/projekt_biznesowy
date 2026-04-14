@@ -22,21 +22,21 @@ public sealed class GetAttractionByIdQueryHandler(
 // GET ALL ATTRACTIONS
 // ───────────────────────────────────────────────
 
-public sealed record GetAllAttractionsQuery : IRequest<IReadOnlyList<AttractionSummaryDto>>;
+public sealed record GetAllAttractionsQuery(string? State = null) : IRequest<IReadOnlyList<AttractionSummaryDto>>;
 
 public sealed class GetAllAttractionsQueryHandler(
     IAttractionRepository attractionRepo
 ) : IRequestHandler<GetAllAttractionsQuery, IReadOnlyList<AttractionSummaryDto>>
 {
     public Task<IReadOnlyList<AttractionSummaryDto>> Handle(GetAllAttractionsQuery query, CancellationToken ct)
-        => attractionRepo.GetAllAsync(ct);
+        => attractionRepo.GetAllAsync(query.State, ct);
 }
 
 // ───────────────────────────────────────────────
 // GET SCENARIO BY ID
 // ───────────────────────────────────────────────
 
-public sealed record GetScenarioByIdQuery(Guid ScenarioId) : IRequest<ScenarioDetailDto?>;
+public sealed record GetScenarioByIdQuery(Guid AttractionId, Guid ScenarioId) : IRequest<ScenarioDetailDto?>;
 
 public sealed class GetScenarioByIdQueryHandler(
     IScenarioRepository scenarioRepo

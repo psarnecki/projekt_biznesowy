@@ -1,7 +1,8 @@
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tripder.Api.Models;
-using Tripder.Application.AttractionDefinition;
+using Tripder.Application.AttractionDefinition.Commands;
+using Tripder.Application.AttractionDefinition.Queries;
 
 namespace Tripder.Api.Controllers;
 

@@ -5,10 +5,12 @@ namespace Tripder.Application.AttractionDefinition.Repositories;
 public interface IAttractionRepository
 {
     Task<AttractionDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default);
-    Task<IReadOnlyList<AttractionSummaryDto>> GetAllAsync(CancellationToken ct = default);
+    Task<IReadOnlyList<AttractionSummaryDto>> GetAllAsync(string? state = null, CancellationToken ct = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken ct = default);
     Task<bool> NameExistsAsync(string name, Guid? excludeId = null, CancellationToken ct = default);
     Task AddAsync(NewAttractionData data, CancellationToken ct = default);
+    Task UpdateAsync(UpdateAttractionData data, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task UpdateStateAsync(Guid id, string newState, CancellationToken ct = default);
     Task UpdateCatalogWindowAsync(Guid id, DateOnly? catalogFrom, DateOnly? catalogTo, CancellationToken ct = default);
     Task AssignTagAsync(Guid attractionId, Guid tagId, CancellationToken ct = default);
@@ -23,6 +25,8 @@ public interface IScenarioRepository
     Task<IReadOnlyList<ScenarioSummaryDto>> GetByAttractionIdAsync(Guid attractionId, CancellationToken ct = default);
     Task<bool> ExistsAsync(Guid id, CancellationToken ct = default);
     Task AddAsync(NewScenarioData data, CancellationToken ct = default);
+    Task UpdateAsync(UpdateScenarioData data, CancellationToken ct = default);
+    Task DeleteAsync(Guid id, CancellationToken ct = default);
     Task UpdateStateAsync(Guid id, string newState, CancellationToken ct = default);
     Task AssignTagAsync(Guid scenarioId, Guid tagId, CancellationToken ct = default);
     Task RemoveTagAsync(Guid scenarioId, Guid tagId, CancellationToken ct = default);
@@ -48,6 +52,8 @@ public interface ICategoryRepository
 public interface ITagRepository
 {
     Task<bool> ExistsAsync(Guid id, CancellationToken ct = default);
+    Task<Guid> GetOrCreateByNameAsync(string name, CancellationToken ct = default);
+    Task<Guid?> GetIdByNameAsync(string name, CancellationToken ct = default);
 }
 
 // Wewnętrzne rekordy danych dla operacji zapisu (nie wychodzą poza Application)
@@ -82,6 +88,25 @@ public sealed record NewRuleData(
     DateOnly? DateTo,
     string? Params,
     IReadOnlyList<Guid> DayOfWeekIds
+);
+
+public sealed record UpdateAttractionData(
+    Guid Id,
+    string Name,
+    Guid CategoryId,
+    string LocationName,
+    float Latitude,
+    float Longitude,
+    int? Capacity,
+    DateOnly? CatalogFrom,
+    DateOnly? CatalogTo
+);
+
+public sealed record UpdateScenarioData(
+    Guid Id,
+    string Name,
+    string Description,
+    int DurationMinutes
 );
 
 public sealed record UpdateRuleData(
