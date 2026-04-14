@@ -1,5 +1,6 @@
-namespace Tripder.Domain.AttractionDefiniton.Entities;
+using Tripder.Domain.AttractionDefinition.Enums;
 
+namespace Tripder.Domain.AttractionDefinition.Entities;
 
 public class Scenario
 {

@@ -1,4 +1,4 @@
-namespace Tripder.Domain.AttractionDefiniton.Entities;
+namespace Tripder.Domain.AttractionDefinition.Entities;
 
 
 public class Category
