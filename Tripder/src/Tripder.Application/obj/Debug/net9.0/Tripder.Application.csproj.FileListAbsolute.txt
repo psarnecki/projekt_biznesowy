@@ -1,0 +1,16 @@
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/bin/Debug/net9.0/Tripder.Application.deps.json
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/bin/Debug/net9.0/Tripder.Application.dll
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/bin/Debug/net9.0/Tripder.Application.pdb
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/bin/Debug/net9.0/Tripder.Domain.dll
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/bin/Debug/net9.0/Tripder.Domain.pdb
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.csproj.AssemblyReference.cache
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.GeneratedMSBuildEditorConfig.editorconfig
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.AssemblyInfoInputs.cache
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.AssemblyInfo.cs
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.csproj.CoreCompileInputs.cache
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.sourcelink.json
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder..17D6849B.Up2Date
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.dll
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/refint/Tripder.Application.dll
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/Tripder.Application.pdb
+/Users/damian/Desktop/Studia/ProjektBiznesowy/ProjektBiznesowy/Tripder/src/Tripder.Application/obj/Debug/net9.0/ref/Tripder.Application.dll
