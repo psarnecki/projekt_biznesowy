@@ -1,10 +1,10 @@
 using Tripder.Domain.AttractionDefinition.Enums;
+using Tripder.Domain.Common;
 
 namespace Tripder.Domain.AttractionDefinition.Entities;
 
-public class Attraction
+public class Attraction : AggregateRoot
 {
-    public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public Guid CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;

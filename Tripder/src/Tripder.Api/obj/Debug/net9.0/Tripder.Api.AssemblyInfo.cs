@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Tripder.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48d00621269c6c158b75d6d0483e346c5ecc85dd")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3ac60090f746a086a83cb4233299c695a1ed3bcf")]
 [assembly: System.Reflection.AssemblyProductAttribute("Tripder.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Tripder.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
