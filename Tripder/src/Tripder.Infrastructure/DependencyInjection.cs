@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Tripder.Domain.AttractionDefinition.Repositories;
+using Tripder.Application.AttractionDefinition.Repositories;
 using Tripder.Domain.Common;
 using Tripder.Infrastructure.Persistence;
 using Tripder.Infrastructure.Persistence.Repositories;
@@ -12,7 +12,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
-        // connection string z appsettings — jak go nie ma to lecimy wyjątkiem od razu, bo i tak nie ma sensu odpalać apki bez bazy
         var cs = configuration.GetConnectionString("DefaultConnection")
                  ?? throw new InvalidOperationException("Brak ConnectionStrings:DefaultConnection w konfiguracji.");
 
@@ -20,7 +19,10 @@ public static class DependencyInjection
             o.UseNpgsql(cs));
 
         services.AddScoped<IAttractionRepository, AttractionRepository>();
+        services.AddScoped<IScenarioRepository, ScenarioRepository>();
         services.AddScoped<IRuleDefinitionRepository, RuleDefinitionRepository>();
+        services.AddScoped<ICategoryRepository, CategoryRepository>();
+        services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
 
         return services;
