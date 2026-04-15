@@ -14,7 +14,7 @@ public class DayOfWeekEntryConfiguration : IEntityTypeConfiguration<DayOfWeekEnt
         builder.Property(d => d.Name).HasMaxLength(32).IsRequired();
 
         builder.HasOne<RuleDefinition>()
-            .WithMany("_days")
+            .WithMany(r => r.Days)
             .HasForeignKey("RuleDefinitionId")
             .IsRequired()
             .OnDelete(DeleteBehavior.Cascade);

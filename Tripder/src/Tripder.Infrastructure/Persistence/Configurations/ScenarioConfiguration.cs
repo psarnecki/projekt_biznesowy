@@ -19,20 +19,20 @@ public class ScenarioConfiguration : IEntityTypeConfiguration<Scenario>
 
         // jeden scenariusz należy do jednej atrakcji — jak masz AttractionId w tabeli to EF musi to wiedzieć żeby nie zrobić Ci losowych joinów
         builder.HasOne(s => s.Attraction)
-            .WithMany("_scenarios")
+            .WithMany(a => a.Scenarios)
             .HasForeignKey(s => s.AttractionId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // obrazki są w osobnym pliku konfiguracji (ImageConfiguration) żeby nie duplikować tej samej relacji w dwóch miejscach (DRY)
 
-        builder.HasMany(typeof(Tag), "_tags")
+        builder.HasMany(s => s.Tags)
             .WithMany()
             .UsingEntity(j =>
             {
                 j.ToTable("ScenarioTags");
             });
 
-        builder.HasMany(typeof(RuleDefinition), "_rules")
+        builder.HasMany(s => s.Rules)
             .WithMany()
             .UsingEntity(j =>
             {

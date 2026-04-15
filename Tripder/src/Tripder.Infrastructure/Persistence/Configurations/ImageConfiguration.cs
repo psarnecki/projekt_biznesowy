@@ -15,7 +15,7 @@ public class ImageConfiguration : IEntityTypeConfiguration<Image>
         builder.Property(i => i.OrderIndex).IsRequired();
 
         builder.HasOne<Scenario>()
-            .WithMany("_images")
+            .WithMany(s => s.Images)
             .HasForeignKey(i => i.ScenarioId)
             .OnDelete(DeleteBehavior.Cascade);
     }

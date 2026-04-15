@@ -29,14 +29,14 @@ public class AttractionConfiguration : IEntityTypeConfiguration<Attraction>
             .HasForeignKey(a => a.CategoryId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasMany(typeof(Tag), "_tags")
+        builder.HasMany(a => a.Tags)
             .WithMany()
             .UsingEntity(j =>
             {
                 j.ToTable("AttractionTags");
             });
 
-        builder.HasMany(typeof(RuleDefinition), "_rules")
+        builder.HasMany(a => a.Rules)
             .WithMany()
             .UsingEntity(j =>
             {
