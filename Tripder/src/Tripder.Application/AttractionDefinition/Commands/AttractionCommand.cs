@@ -20,8 +20,7 @@ public sealed record CreateAttractionCommand(
 ) : IRequest<Guid>;
 
 public sealed class CreateAttractionCommandHandler(
-    IAttractionRepository attractionRepo,
-    ICategoryRepository categoryRepo
+    IAttractionRepository attractionRepo
 ) : IRequestHandler<CreateAttractionCommand, Guid>
 {
     public async Task<Guid> Handle(CreateAttractionCommand cmd, CancellationToken ct)
