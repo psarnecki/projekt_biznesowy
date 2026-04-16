@@ -4,10 +4,7 @@ using Tripder.Application.AttractionDefinition.Repositories;
 
 namespace Tripder.Application.AttractionDefinition.Queries;
 
-// ───────────────────────────────────────────────
-// GET ATTRACTION BY ID
-// ───────────────────────────────────────────────
-
+// Get attraction by id
 public sealed record GetAttractionByIdQuery(Guid AttractionId) : IRequest<AttractionDetailDto?>;
 
 public sealed class GetAttractionByIdQueryHandler(
@@ -18,10 +15,7 @@ public sealed class GetAttractionByIdQueryHandler(
         => attractionRepo.GetByIdAsync(query.AttractionId, ct);
 }
 
-// ───────────────────────────────────────────────
-// GET ALL ATTRACTIONS
-// ───────────────────────────────────────────────
-
+// Get all attractions
 public sealed record GetAllAttractionsQuery(string? State = null) : IRequest<IReadOnlyList<AttractionSummaryDto>>;
 
 public sealed class GetAllAttractionsQueryHandler(
@@ -32,10 +26,7 @@ public sealed class GetAllAttractionsQueryHandler(
         => attractionRepo.GetAllAsync(query.State, ct);
 }
 
-// ───────────────────────────────────────────────
-// GET SCENARIO BY ID
-// ───────────────────────────────────────────────
-
+// Get scenario by id
 public sealed record GetScenarioByIdQuery(Guid AttractionId, Guid ScenarioId) : IRequest<ScenarioDetailDto?>;
 
 public sealed class GetScenarioByIdQueryHandler(
@@ -46,10 +37,7 @@ public sealed class GetScenarioByIdQueryHandler(
         => scenarioRepo.GetByIdAsync(query.ScenarioId, ct);
 }
 
-// ───────────────────────────────────────────────
-// GET SCENARIOS BY ATTRACTION
-// ───────────────────────────────────────────────
-
+// Get scenarios by attraction
 public sealed record GetScenariosByAttractionQuery(Guid AttractionId) : IRequest<IReadOnlyList<ScenarioSummaryDto>>;
 
 public sealed class GetScenariosByAttractionQueryHandler(
@@ -60,10 +48,7 @@ public sealed class GetScenariosByAttractionQueryHandler(
         => scenarioRepo.GetByAttractionIdAsync(query.AttractionId, ct);
 }
 
-// ───────────────────────────────────────────────
-// GET RULE DEFINITION BY ID
-// ───────────────────────────────────────────────
-
+// Get rule definition by id
 public sealed record GetRuleDefinitionByIdQuery(Guid RuleId) : IRequest<RuleDefinitionDto?>;
 
 public sealed class GetRuleDefinitionByIdQueryHandler(
@@ -74,10 +59,7 @@ public sealed class GetRuleDefinitionByIdQueryHandler(
         => ruleRepo.GetByIdAsync(query.RuleId, ct);
 }
 
-// ───────────────────────────────────────────────
-// GET ALL RULE DEFINITIONS
-// ───────────────────────────────────────────────
-
+// Get all rule definitions
 public sealed record GetAllRuleDefinitionsQuery : IRequest<IReadOnlyList<RuleDefinitionDto>>;
 
 public sealed class GetAllRuleDefinitionsQueryHandler(

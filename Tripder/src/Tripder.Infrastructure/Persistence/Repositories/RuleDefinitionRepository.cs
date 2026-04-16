@@ -3,7 +3,6 @@ using Tripder.Application.AttractionDefinition.DTOs;
 using IApplicationRuleDefinitionRepository = Tripder.Application.AttractionDefinition.Repositories.IRuleDefinitionRepository;
 using IDomainRuleDefinitionRepository = Tripder.Domain.AttractionDefinition.Repositories.IRuleDefinitionRepository;
 using Tripder.Domain.AttractionDefinition.Entities;
-using Tripder.Domain.AttractionDefinition.Enums;
 
 namespace Tripder.Infrastructure.Persistence.Repositories;
 
@@ -16,8 +15,7 @@ public class RuleDefinitionRepository : IApplicationRuleDefinitionRepository, ID
         _db = db;
     }
 
-    // --- IApplicationRuleDefinitionRepository (QUERIES) ---
-    
+    // Application queries
     public async Task<RuleDefinitionDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var rule = await _db.RuleDefinitions
@@ -40,8 +38,7 @@ public class RuleDefinitionRepository : IApplicationRuleDefinitionRepository, ID
     public Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
         => _db.RuleDefinitions.AnyAsync(r => r.Id == id, ct);
 
-    // --- IDomainRuleDefinitionRepository (COMMANDS) ---
-
+    // Domain commands
     async Task<RuleDefinition?> IDomainRuleDefinitionRepository.GetByIdAsync(Guid id, CancellationToken ct)
     {
         return await _db.RuleDefinitions

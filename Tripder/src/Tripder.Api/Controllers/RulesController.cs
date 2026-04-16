@@ -13,7 +13,6 @@ public class RulesController : ControllerBase
 
     public RulesController(IMediator mediator)
     {
-        // klasyczny "dumb controller": jedna odpowiedzialność — forward do MediatR (Single Responsibility, żebyś miał co opowiedzieć na zaliczeniu)
         _mediator = mediator;
     }
 

@@ -1,3 +1,5 @@
+
+
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Tripder.Api.Models;
@@ -14,7 +16,6 @@ public class ScenariosController : ControllerBase
 
     public ScenariosController(IMediator mediator)
     {
-        // znowu: kontroler = router + wywołanie MediatR, nic więcej (żeby prowadzący nie krzyczał na egzaminie)
         _mediator = mediator;
     }
 

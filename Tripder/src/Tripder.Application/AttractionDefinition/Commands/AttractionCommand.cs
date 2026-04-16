@@ -8,10 +8,7 @@ using IDomainAttractionRepository = Tripder.Domain.AttractionDefinition.Reposito
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
-// ───────────────────────────────────────────────
-// CREATE ATTRACTION
-// ───────────────────────────────────────────────
-
+// Create attraction
 public sealed record CreateAttractionCommand(
     string Name,
     Guid CategoryId,
@@ -86,10 +83,7 @@ public sealed class CreateAttractionCommandValidator : AbstractValidator<CreateA
     }
 }
 
-// ───────────────────────────────────────────────
-// UPDATE ATTRACTION
-// ───────────────────────────────────────────────
-
+// Update attraction
 public sealed record UpdateAttractionCommand(
     Guid Id,
     string Name,
@@ -168,10 +162,7 @@ public sealed class UpdateAttractionCommandValidator : AbstractValidator<UpdateA
     }
 }
 
-// ───────────────────────────────────────────────
-// DELETE ATTRACTION
-// ───────────────────────────────────────────────
-
+// Delete attraction
 public sealed record DeleteAttractionCommand(Guid Id) : IRequest;
 
 public sealed class DeleteAttractionCommandHandler(
@@ -201,10 +192,7 @@ public sealed class DeleteAttractionCommandValidator : AbstractValidator<DeleteA
     }
 }
 
-// ───────────────────────────────────────────────
-// PUBLISH ATTRACTION (Draft → Catalog)
-// ───────────────────────────────────────────────
-
+// Publish attraction (Draft → Catalog)
 public sealed record PublishAttractionCommand(Guid AttractionId) : IRequest;
 
 public sealed class PublishAttractionCommandHandler(
@@ -235,10 +223,7 @@ public sealed class PublishAttractionCommandValidator : AbstractValidator<Publis
     }
 }
 
-// ───────────────────────────────────────────────
-// ARCHIVE ATTRACTION (Catalog/Internal → Archived)
-// ───────────────────────────────────────────────
-
+// Archive attraction (Catalog/Internal → Archived)
 public sealed record ArchiveAttractionCommand(Guid AttractionId) : IRequest;
 
 public sealed class ArchiveAttractionCommandHandler(
@@ -269,9 +254,7 @@ public sealed class ArchiveAttractionCommandValidator : AbstractValidator<Archiv
     }
 }
 
-// ───────────────────────────────────────────────
-// SET CATALOG WINDOW (globalny wyłącznik awaryjny)
-// ───────────────────────────────────────────────
+// Set catalog window (globalny wyłącznik awaryjny)
 
 public sealed record SetAttractionCatalogWindowCommand(
     Guid AttractionId,
@@ -311,10 +294,7 @@ public sealed class SetAttractionCatalogWindowCommandValidator : AbstractValidat
     }
 }
 
-// ───────────────────────────────────────────────
-// ADD TAG TO ATTRACTION (by tag name)
-// ───────────────────────────────────────────────
-
+// Add tag to attraction (by tag name)
 public sealed record AddTagToAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
 public sealed class AddTagToAttractionCommandHandler(
@@ -329,7 +309,7 @@ public sealed class AddTagToAttractionCommandHandler(
             ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
 
         var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
-        var tag = new Tag(tagId, cmd.TagName); // w Domain model to jest ok dla Agregatu
+        var tag = new Tag(tagId, cmd.TagName);
         
         attraction.AddTag(tag);
 
@@ -353,10 +333,7 @@ public sealed class AddTagToAttractionCommandValidator : AbstractValidator<AddTa
     }
 }
 
-// ───────────────────────────────────────────────
-// REMOVE TAG FROM ATTRACTION (by tag name)
-// ───────────────────────────────────────────────
-
+// Remove tag from attraction (by tag name)
 public sealed record RemoveTagFromAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromAttractionCommandHandler(
@@ -395,10 +372,7 @@ public sealed class RemoveTagFromAttractionCommandValidator : AbstractValidator<
     }
 }
 
-// ───────────────────────────────────────────────
-// ATTACH RULE TO ATTRACTION
-// ───────────────────────────────────────────────
-
+// Attach rule to attraction
 public sealed record AttachRuleToAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
 public sealed class AttachRuleToAttractionCommandHandler(
@@ -440,10 +414,7 @@ public sealed class AttachRuleToAttractionCommandValidator : AbstractValidator<A
     }
 }
 
-// ───────────────────────────────────────────────
-// DETACH RULE FROM ATTRACTION
-// ───────────────────────────────────────────────
-
+// Detach rule from attraction
 public sealed record DetachRuleFromAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
 public sealed class DetachRuleFromAttractionCommandHandler(

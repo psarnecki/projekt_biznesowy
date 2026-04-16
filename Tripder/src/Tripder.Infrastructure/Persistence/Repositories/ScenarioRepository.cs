@@ -3,7 +3,6 @@ using Tripder.Application.AttractionDefinition.DTOs;
 using IApplicationScenarioRepository = Tripder.Application.AttractionDefinition.Repositories.IScenarioRepository;
 using IDomainScenarioRepository = Tripder.Domain.AttractionDefinition.Repositories.IScenarioRepository;
 using Tripder.Domain.AttractionDefinition.Entities;
-using Tripder.Domain.AttractionDefinition.Enums;
 
 namespace Tripder.Infrastructure.Persistence.Repositories;
 
@@ -16,8 +15,7 @@ public class ScenarioRepository : IApplicationScenarioRepository, IDomainScenari
         _db = db;
     }
 
-    // --- IApplicationScenarioRepository (QUERIES) ---
-
+    // Application queries
     public async Task<ScenarioDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var scenario = await _db.Scenarios
@@ -49,8 +47,7 @@ public class ScenarioRepository : IApplicationScenarioRepository, IDomainScenari
     public Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
         => _db.Scenarios.AnyAsync(s => s.Id == id, ct);
 
-    // --- IDomainScenarioRepository (COMMANDS) ---
-
+    // Domain commands
     async Task<Scenario?> IDomainScenarioRepository.GetByIdAsync(Guid id, CancellationToken ct)
     {
         return await _db.Scenarios

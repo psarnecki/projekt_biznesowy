@@ -8,7 +8,6 @@ public class ImageConfiguration : IEntityTypeConfiguration<Image>
 {
     public void Configure(EntityTypeBuilder<Image> builder)
     {
-        // obrazek jest dzieckiem scenariusza — jak usuniesz scenariusz to obrazki też powinny zginąć (Cascade)
         builder.ToTable("Images");
         builder.HasKey(i => i.Id);
         builder.Property(i => i.Url).HasMaxLength(2000).IsRequired();

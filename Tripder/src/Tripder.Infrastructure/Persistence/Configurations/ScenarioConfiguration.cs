@@ -17,14 +17,11 @@ public class ScenarioConfiguration : IEntityTypeConfiguration<Scenario>
             .HasConversion<string>()
             .HasMaxLength(32);
 
-        // jeden scenariusz należy do jednej atrakcji — jak masz AttractionId w tabeli to EF musi to wiedzieć żeby nie zrobić Ci losowych joinów
         builder.HasOne(s => s.Attraction)
             .WithMany(a => a.Scenarios)
             .HasForeignKey(s => s.AttractionId)
             .OnDelete(DeleteBehavior.Cascade);
-
-        // obrazki są w osobnym pliku konfiguracji (ImageConfiguration) żeby nie duplikować tej samej relacji w dwóch miejscach (DRY)
-
+        
         builder.HasMany(s => s.Tags)
             .WithMany()
             .UsingEntity(j =>

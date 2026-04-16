@@ -59,7 +59,7 @@ public class RuleDefinition
         Params = @params;
     }
 
-    /// Evaluates whether this rule is active for a given date and time.
+    /// Evaluates whether this rule is active for a given date and time
     public bool IsActiveFor(DateOnly date, TimeOnly time)
     {
         if (TimeFrom.HasValue && time < TimeFrom.Value) return false;

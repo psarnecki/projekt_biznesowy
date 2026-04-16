@@ -8,7 +8,6 @@ public class DayOfWeekEntryConfiguration : IEntityTypeConfiguration<DayOfWeekEnt
 {
     public void Configure(EntityTypeBuilder<DayOfWeekEntry> builder)
     {
-        // jeden wiersz = jeden dzień (np. Monday) przypięty do RuleDefinition — FK w bazie nazywa się RuleDefinitionId nawet jak w klasie C# go nie widzisz (EF sobie to trzyma)
         builder.ToTable("RuleDays");
         builder.HasKey(d => d.Id);
         builder.Property(d => d.Name).HasMaxLength(32).IsRequired();

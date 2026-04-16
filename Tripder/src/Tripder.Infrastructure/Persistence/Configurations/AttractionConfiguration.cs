@@ -8,7 +8,6 @@ public class AttractionConfiguration : IEntityTypeConfiguration<Attraction>
 {
     public void Configure(EntityTypeBuilder<Attraction> builder)
     {
-        // Attraction to aggregate root — czyli "szef" całego zestawu scenariuszy/tagów/reguł przypiętych do atrakcji
         builder.ToTable("Attractions");
         builder.HasKey(a => a.Id);
         builder.Property(a => a.Name).HasMaxLength(200).IsRequired();
@@ -18,7 +17,6 @@ public class AttractionConfiguration : IEntityTypeConfiguration<Attraction>
 
         builder.OwnsOne(a => a.Location, loc =>
         {
-            // owned = Location siedzi w tej samej tabeli co Attraction (kolumny Latitude itd.) — tak chcieliśmy w zadaniu
             loc.Property(l => l.Latitude).HasColumnName("Latitude");
             loc.Property(l => l.Longitude).HasColumnName("Longitude");
             loc.Property(l => l.LocationName).HasMaxLength(300).HasColumnName("LocationName");

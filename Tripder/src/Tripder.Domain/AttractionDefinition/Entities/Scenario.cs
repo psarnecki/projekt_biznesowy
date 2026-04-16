@@ -94,8 +94,8 @@ public class Scenario
         if (rule is not null) _rules.Remove(rule);
     }
     
-    /// Evaluates scenario availability using its rules (highest priority wins).
-    /// Returns null if no rules match (treat as allowed by default).
+    /// Evaluates scenario availability using its rules (highest priority wins)
+    /// Returns null if no rules match (treat as allowed by default)
     public bool IsAvailableAt(DateOnly date, TimeOnly time)
     {
         if (State != ScenarioState.Catalog) return false;

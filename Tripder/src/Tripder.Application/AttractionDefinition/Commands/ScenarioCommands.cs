@@ -7,10 +7,7 @@ using IDomainScenarioRepository = Tripder.Domain.AttractionDefinition.Repositori
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
-// ───────────────────────────────────────────────
-// ADD SCENARIO
-// ───────────────────────────────────────────────
-
+// Add scenario 
 public sealed record AddScenarioCommand(
     Guid AttractionId,
     string Name,
@@ -64,10 +61,7 @@ public sealed class AddScenarioCommandValidator : AbstractValidator<AddScenarioC
     }
 }
 
-// ───────────────────────────────────────────────
-// UPDATE SCENARIO
-// ───────────────────────────────────────────────
-
+// Update scenario
 public sealed record UpdateScenarioCommand(
     Guid AttractionId,
     Guid ScenarioId,
@@ -123,10 +117,7 @@ public sealed class UpdateScenarioCommandValidator : AbstractValidator<UpdateSce
     }
 }
 
-// ───────────────────────────────────────────────
-// REMOVE SCENARIO
-// ───────────────────────────────────────────────
-
+// Remove scenario
 public sealed record RemoveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class RemoveScenarioCommandHandler(
@@ -163,10 +154,7 @@ public sealed class RemoveScenarioCommandValidator : AbstractValidator<RemoveSce
     }
 }
 
-// ───────────────────────────────────────────────
-// PUBLISH SCENARIO (Draft → Catalog)
-// ───────────────────────────────────────────────
-
+// Publish scenario (Draft → Catalog)
 public sealed record PublishScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class PublishScenarioCommandHandler(
@@ -197,10 +185,7 @@ public sealed class PublishScenarioCommandValidator : AbstractValidator<PublishS
     }
 }
 
-// ───────────────────────────────────────────────
-// ARCHIVE SCENARIO
-// ───────────────────────────────────────────────
-
+// Archive scenario
 public sealed record ArchiveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class ArchiveScenarioCommandHandler(
@@ -231,10 +216,7 @@ public sealed class ArchiveScenarioCommandValidator : AbstractValidator<ArchiveS
     }
 }
 
-// ───────────────────────────────────────────────
-// ADD TAG TO SCENARIO (by tag name)
-// ───────────────────────────────────────────────
-
+// Add tag to scenario (by tag name)
 public sealed record AddTagToScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
 public sealed class AddTagToScenarioCommandHandler(
@@ -280,10 +262,7 @@ public sealed class AddTagToScenarioCommandValidator : AbstractValidator<AddTagT
     }
 }
 
-// ───────────────────────────────────────────────
-// REMOVE TAG FROM SCENARIO (by tag name)
-// ───────────────────────────────────────────────
-
+// Remove tag from scenario (by tag name)
 public sealed record RemoveTagFromScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromScenarioCommandHandler(
@@ -329,10 +308,7 @@ public sealed class RemoveTagFromScenarioCommandValidator : AbstractValidator<Re
     }
 }
 
-// ───────────────────────────────────────────────
-// ATTACH RULE TO SCENARIO
-// ───────────────────────────────────────────────
-
+// Attach rule to scenario
 public sealed record AttachRuleToScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
 public sealed class AttachRuleToScenarioCommandHandler(
@@ -380,10 +356,7 @@ public sealed class AttachRuleToScenarioCommandValidator : AbstractValidator<Att
     }
 }
 
-// ───────────────────────────────────────────────
-// DETACH RULE FROM SCENARIO
-// ───────────────────────────────────────────────
-
+// Detach rule from scenario
 public sealed record DetachRuleFromScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
 public sealed class DetachRuleFromScenarioCommandHandler(

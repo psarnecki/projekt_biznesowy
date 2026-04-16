@@ -8,7 +8,6 @@ public class TagConfiguration : IEntityTypeConfiguration<Tag>
 {
     public void Configure(EntityTypeBuilder<Tag> builder)
     {
-        // Tag to osobny wiersz w tabeli Tags — potem łączymy go z atrakcją/scenariuszem przez tabele sklejające (many-to-many)
         builder.ToTable("Tags");
         builder.HasKey(t => t.Id);
         builder.Property(t => t.Name).HasMaxLength(100).IsRequired();

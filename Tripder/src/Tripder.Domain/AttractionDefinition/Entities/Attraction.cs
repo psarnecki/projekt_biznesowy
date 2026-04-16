@@ -110,7 +110,7 @@ public class Attraction : AggregateRoot
         if (rule is not null) _rules.Remove(rule);
     }
     
-    /// Returns true if the attraction's global catalog window is active on a given date.
+    /// Returns true if the attraction's global catalog window is active on a given date
     public bool IsVisibleOnDate(DateOnly date)
     {
         if (State != AttractionState.Catalog) return false;
@@ -119,7 +119,7 @@ public class Attraction : AggregateRoot
         return true;
     }
     
-    /// Haversine distance in km to a point.
+    /// Haversine distance in km to a point
     public double DistanceKmTo(double lat, double lon)
     {
         const double R = 6371;

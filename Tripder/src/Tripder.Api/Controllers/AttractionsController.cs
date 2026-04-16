@@ -15,7 +15,6 @@ public class AttractionsController : ControllerBase
 
     public AttractionsController(IMediator mediator)
     {
-        // tylko mediator — zero logiki, bo logika ma być w handlerach (clean architecture vibes)
         _mediator = mediator;
     }
 

@@ -4,7 +4,6 @@ using IApplicationAttractionRepository = Tripder.Application.AttractionDefinitio
 using IDomainAttractionRepository = Tripder.Domain.AttractionDefinition.Repositories.IAttractionRepository;
 using Tripder.Domain.AttractionDefinition.Entities;
 using Tripder.Domain.AttractionDefinition.Enums;
-using Tripder.Domain.AttractionDefinition.ValueObjects;
 
 namespace Tripder.Infrastructure.Persistence.Repositories;
 
@@ -17,8 +16,7 @@ public class AttractionRepository : IApplicationAttractionRepository, IDomainAtt
         _db = db;
     }
 
-    // --- IApplicationAttractionRepository (QUERIES) ---
-    
+    // Application queries
     public async Task<AttractionDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
         var attraction = await _db.Attractions
@@ -64,8 +62,7 @@ public class AttractionRepository : IApplicationAttractionRepository, IDomainAtt
     public Task<bool> NameExistsAsync(string name, Guid? excludeId = null, CancellationToken ct = default)
         => _db.Attractions.AnyAsync(a => a.Name == name && (!excludeId.HasValue || a.Id != excludeId.Value), ct);
 
-    // --- IDomainAttractionRepository (COMMANDS) ---
-
+    // Domain commands
     async Task<Attraction?> IDomainAttractionRepository.GetByIdAsync(Guid id, CancellationToken ct)
     {
         return await _db.Attractions

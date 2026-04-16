@@ -8,10 +8,7 @@ using IDomainRuleDefinitionRepository = Tripder.Domain.AttractionDefinition.Repo
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
-// ───────────────────────────────────────────────
-// CREATE RULE DEFINITION
-// ───────────────────────────────────────────────
-
+// Create rule definition
 public sealed record CreateRuleDefinitionCommand(
     string RuleType,
     string Effect,
@@ -94,10 +91,7 @@ public sealed class CreateRuleDefinitionCommandValidator : AbstractValidator<Cre
     }
 }
 
-// ───────────────────────────────────────────────
-// UPDATE RULE DEFINITION
-// ───────────────────────────────────────────────
-
+// Update rule definition
 public sealed record UpdateRuleDefinitionCommand(
     Guid RuleId,
     string RuleType,
@@ -175,10 +169,7 @@ public sealed class UpdateRuleDefinitionCommandValidator : AbstractValidator<Upd
     }
 }
 
-// ───────────────────────────────────────────────
-// DELETE RULE DEFINITION
-// ───────────────────────────────────────────────
-
+// Delete rule definition
 public sealed record DeleteRuleDefinitionCommand(Guid RuleId) : IRequest;
 
 public sealed class DeleteRuleDefinitionCommandHandler(

@@ -4,7 +4,6 @@ using Tripder.Domain.Common;
 
 namespace Tripder.Infrastructure.Persistence;
 
-// DbContext = "okno" do bazy — tutaj EF trzyma tracking encji itd. (Jak ktoś pyta: tak, to jest ten sam DbContext co na wykładzie)
 public class AppDbContext : DbContext, IUnitOfWork
 {
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options)
