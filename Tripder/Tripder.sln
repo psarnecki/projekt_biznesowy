@@ -1,9 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
-	ProjectSection(SolutionItems) = preProject
-		src\.gitignore = src\.gitignore
-	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tripder.Domain", "src\Tripder.Domain\Tripder.Domain.csproj", "{4614AF93-38BF-4736-A55A-43F812A7B444}"
 EndProject
