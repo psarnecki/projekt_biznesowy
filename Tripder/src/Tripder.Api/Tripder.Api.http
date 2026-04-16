@@ -1,6 +1,19 @@
-@Tripder.Api_HostAddress = http://localhost:5225
+@host = http://localhost:5225
 
-GET {{Tripder.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Attractions
 
-###
+GET {{host}}/api/attractions
+POST {{host}}/api/attractions
+PATCH {{host}}/api/attractions/{attractionId}/publish
+PATCH {{host}}/api/attractions/{attractionId}/archive
+
+### Rules
+
+GET {{host}}/api/rules
+POST {{host}}/api/rules
+
+### Scenarios
+
+POST {{host}}/api/attractions/{attractionId}/scenarios
+PATCH {{host}}/api/attractions/{attractionId}/scenarios/{scenarioId}/publish
+PATCH {{host}}/api/attractions/{attractionId}/scenarios/{scenarioId}/archive
