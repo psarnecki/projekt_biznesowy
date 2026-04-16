@@ -1,12 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Tripder.Application.AttractionDefinition.DTOs;
-using Tripder.Application.AttractionDefinition.Repositories;
+using IApplicationScenarioRepository = Tripder.Application.AttractionDefinition.Repositories.IScenarioRepository;
+using IDomainScenarioRepository = Tripder.Domain.AttractionDefinition.Repositories.IScenarioRepository;
 using Tripder.Domain.AttractionDefinition.Entities;
 using Tripder.Domain.AttractionDefinition.Enums;
 
 namespace Tripder.Infrastructure.Persistence.Repositories;
 
-public class ScenarioRepository : IScenarioRepository
+public class ScenarioRepository : IApplicationScenarioRepository, IDomainScenarioRepository
 {
     private readonly AppDbContext _db;
 
@@ -14,6 +15,8 @@ public class ScenarioRepository : IScenarioRepository
     {
         _db = db;
     }
+
+    // --- IApplicationScenarioRepository (QUERIES) ---
 
     public async Task<ScenarioDetailDto?> GetByIdAsync(Guid id, CancellationToken ct = default)
     {
@@ -46,109 +49,42 @@ public class ScenarioRepository : IScenarioRepository
     public Task<bool> ExistsAsync(Guid id, CancellationToken ct = default)
         => _db.Scenarios.AnyAsync(s => s.Id == id, ct);
 
-    public async Task AddAsync(NewScenarioData data, CancellationToken ct = default)
-    {
-        var scenario = new Scenario(
-            data.Id,
-            data.AttractionId,
-            data.Name,
-            data.Description,
-            data.DurationMinutes);
+    // --- IDomainScenarioRepository (COMMANDS) ---
 
+    async Task<Scenario?> IDomainScenarioRepository.GetByIdAsync(Guid id, CancellationToken ct)
+    {
+        return await _db.Scenarios
+            .Include(s => s.Tags)
+            .Include(s => s.Images)
+            .Include(s => s.Rules)
+            .FirstOrDefaultAsync(s => s.Id == id, ct);
+    }
+
+    async Task<List<Scenario>> IDomainScenarioRepository.GetByAttractionIdAsync(Guid attractionId, CancellationToken ct)
+    {
+        return await _db.Scenarios
+            .Include(s => s.Tags)
+            .Include(s => s.Images)
+            .Include(s => s.Rules)
+            .Where(s => s.AttractionId == attractionId)
+            .ToListAsync(ct);
+    }
+
+    public async Task AddAsync(Scenario scenario, CancellationToken ct = default)
+    {
         await _db.Scenarios.AddAsync(scenario, ct);
-        await _db.SaveChangesAsync(ct);
     }
 
-    public async Task UpdateAsync(UpdateScenarioData data, CancellationToken ct = default)
+    public Task UpdateAsync(Scenario scenario, CancellationToken ct = default)
     {
-        var scenario = await _db.Scenarios.FirstOrDefaultAsync(s => s.Id == data.Id, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {data.Id} not found.");
-
-        scenario.Update(data.Name, data.Description, data.DurationMinutes);
-        await _db.SaveChangesAsync(ct);
+        _db.Scenarios.Update(scenario);
+        return Task.CompletedTask;
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken ct = default)
+    public Task DeleteAsync(Scenario scenario, CancellationToken ct = default)
     {
-        var scenario = await _db.Scenarios.FirstOrDefaultAsync(s => s.Id == id, ct);
-        if (scenario is null)
-        {
-            return;
-        }
-
         _db.Scenarios.Remove(scenario);
-        await _db.SaveChangesAsync(ct);
-    }
-
-    public async Task UpdateStateAsync(Guid id, string newState, CancellationToken ct = default)
-    {
-        var scenario = await _db.Scenarios.FirstOrDefaultAsync(s => s.Id == id, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {id} not found.");
-
-        if (!Enum.TryParse<ScenarioState>(newState, true, out var parsedState))
-        {
-            throw new ArgumentException($"Invalid scenario state: {newState}", nameof(newState));
-        }
-
-        switch (parsedState)
-        {
-            case ScenarioState.Catalog:
-                scenario.Publish();
-                break;
-            case ScenarioState.Archived:
-                scenario.Archive();
-                break;
-            case ScenarioState.Internal:
-                _db.Entry(scenario).Property(s => s.State).CurrentValue = ScenarioState.Internal;
-                break;
-            case ScenarioState.Draft:
-                _db.Entry(scenario).Property(s => s.State).CurrentValue = ScenarioState.Draft;
-                break;
-        }
-
-        await _db.SaveChangesAsync(ct);
-    }
-
-    public async Task AssignTagAsync(Guid scenarioId, Guid tagId, CancellationToken ct = default)
-    {
-        var scenario = await _db.Scenarios.Include(s => s.Tags).FirstOrDefaultAsync(s => s.Id == scenarioId, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {scenarioId} not found.");
-
-        var tag = await _db.Tags.FirstOrDefaultAsync(t => t.Id == tagId, ct)
-                  ?? throw new KeyNotFoundException($"Tag {tagId} not found.");
-
-        scenario.AddTag(tag);
-        await _db.SaveChangesAsync(ct);
-    }
-
-    public async Task RemoveTagAsync(Guid scenarioId, Guid tagId, CancellationToken ct = default)
-    {
-        var scenario = await _db.Scenarios.Include(s => s.Tags).FirstOrDefaultAsync(s => s.Id == scenarioId, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {scenarioId} not found.");
-
-        scenario.RemoveTag(tagId);
-        await _db.SaveChangesAsync(ct);
-    }
-
-    public async Task AssignRuleAsync(Guid scenarioId, Guid ruleId, CancellationToken ct = default)
-    {
-        var scenario = await _db.Scenarios.Include(s => s.Rules).FirstOrDefaultAsync(s => s.Id == scenarioId, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {scenarioId} not found.");
-
-        var rule = await _db.RuleDefinitions.FirstOrDefaultAsync(r => r.Id == ruleId, ct)
-                   ?? throw new KeyNotFoundException($"Rule {ruleId} not found.");
-
-        scenario.AddRule(rule);
-        await _db.SaveChangesAsync(ct);
-    }
-
-    public async Task RemoveRuleAsync(Guid scenarioId, Guid ruleId, CancellationToken ct = default)
-    {
-        var scenario = await _db.Scenarios.Include(s => s.Rules).FirstOrDefaultAsync(s => s.Id == scenarioId, ct)
-                       ?? throw new KeyNotFoundException($"Scenario {scenarioId} not found.");
-
-        scenario.RemoveRule(ruleId);
-        await _db.SaveChangesAsync(ct);
+        return Task.CompletedTask;
     }
 
     private static ScenarioDetailDto MapDetail(Scenario scenario)
@@ -178,4 +114,3 @@ public class ScenarioRepository : IScenarioRepository
                     r.Days.Select(d => d.Name).ToList()))
                 .ToList());
 }
-

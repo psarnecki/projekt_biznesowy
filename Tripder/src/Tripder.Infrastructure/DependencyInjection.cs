@@ -18,7 +18,9 @@ public static class DependencyInjection
         services.AddDbContext<AppDbContext>(o =>
             o.UseNpgsql(cs));
 
-        services.AddScoped<IAttractionRepository, AttractionRepository>();
+        services.AddScoped<Tripder.Application.AttractionDefinition.Repositories.IAttractionRepository, AttractionRepository>();
+        services.AddScoped<Tripder.Domain.AttractionDefinition.Repositories.IAttractionRepository, AttractionRepository>();
+        
         services.AddScoped<IScenarioRepository, ScenarioRepository>();
         services.AddScoped<IRuleDefinitionRepository, RuleDefinitionRepository>();
         services.AddScoped<ICategoryRepository, CategoryRepository>();
