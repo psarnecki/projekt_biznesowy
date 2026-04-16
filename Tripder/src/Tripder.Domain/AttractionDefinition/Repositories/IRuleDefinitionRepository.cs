@@ -7,5 +7,6 @@ public interface IRuleDefinitionRepository
     Task<RuleDefinition?> GetByIdAsync(Guid id, CancellationToken ct = default);
     Task<List<RuleDefinition>> GetAllAsync(CancellationToken ct = default);
     Task AddAsync(RuleDefinition rule, CancellationToken ct = default);
+    Task UpdateAsync(RuleDefinition rule, CancellationToken ct = default);
     Task DeleteAsync(RuleDefinition rule, CancellationToken ct = default);
 }
