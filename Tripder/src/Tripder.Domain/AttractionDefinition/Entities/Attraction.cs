@@ -70,6 +70,15 @@ public class Attraction : AggregateRoot
         CatalogTo = to;
     }
 
+    public void Update(string name, Guid categoryId, Location location, int? capacity, DateOnly? catalogFrom, DateOnly? catalogTo)
+    {
+        Name = name;
+        CategoryId = categoryId;
+        Location = location;
+        Capacity = capacity;
+        SetCatalogWindow(catalogFrom, catalogTo);
+    }
+
     public void AddScenario(Scenario scenario)
     {
         if (scenario.AttractionId != Id)

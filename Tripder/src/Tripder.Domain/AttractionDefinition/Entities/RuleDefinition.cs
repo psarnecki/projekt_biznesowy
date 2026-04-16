@@ -47,6 +47,18 @@ public class RuleDefinition
             _days.Add(day);
     }
 
+    public void Update(RuleType ruleType, RuleEffect effect, int priority, TimeOnly? timeFrom, TimeOnly? timeTo, DateOnly? dateFrom, DateOnly? dateTo, string? @params)
+    {
+        RuleType = ruleType;
+        Effect = effect;
+        Priority = priority;
+        TimeFrom = timeFrom;
+        TimeTo = timeTo;
+        DateFrom = dateFrom;
+        DateTo = dateTo;
+        Params = @params;
+    }
+
     /// Evaluates whether this rule is active for a given date and time.
     public bool IsActiveFor(DateOnly date, TimeOnly time)
     {
