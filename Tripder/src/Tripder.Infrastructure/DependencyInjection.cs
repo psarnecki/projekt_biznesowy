@@ -20,9 +20,13 @@ public static class DependencyInjection
 
         services.AddScoped<Tripder.Application.AttractionDefinition.Repositories.IAttractionRepository, AttractionRepository>();
         services.AddScoped<Tripder.Domain.AttractionDefinition.Repositories.IAttractionRepository, AttractionRepository>();
-        
-        services.AddScoped<IScenarioRepository, ScenarioRepository>();
-        services.AddScoped<IRuleDefinitionRepository, RuleDefinitionRepository>();
+
+        services.AddScoped<Tripder.Application.AttractionDefinition.Repositories.IScenarioRepository, ScenarioRepository>();
+        services.AddScoped<Tripder.Domain.AttractionDefinition.Repositories.IScenarioRepository, ScenarioRepository>();
+
+        services.AddScoped<Tripder.Application.AttractionDefinition.Repositories.IRuleDefinitionRepository, RuleDefinitionRepository>();
+        services.AddScoped<Tripder.Domain.AttractionDefinition.Repositories.IRuleDefinitionRepository, RuleDefinitionRepository>();
+
         services.AddScoped<ICategoryRepository, CategoryRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<AppDbContext>());
