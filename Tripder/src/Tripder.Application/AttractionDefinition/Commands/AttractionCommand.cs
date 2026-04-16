@@ -1,6 +1,10 @@
 ﻿using FluentValidation;
 using MediatR;
 using Tripder.Application.AttractionDefinition.Repositories;
+using Tripder.Domain.Common;
+using Tripder.Domain.AttractionDefinition.Entities;
+using Tripder.Domain.AttractionDefinition.ValueObjects;
+using IDomainAttractionRepository = Tripder.Domain.AttractionDefinition.Repositories.IAttractionRepository;
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
@@ -20,23 +24,26 @@ public sealed record CreateAttractionCommand(
 ) : IRequest<Guid>;
 
 public sealed class CreateAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<CreateAttractionCommand, Guid>
 {
     public async Task<Guid> Handle(CreateAttractionCommand cmd, CancellationToken ct)
     {
         var id = Guid.NewGuid();
-        await attractionRepo.AddAsync(new NewAttractionData(
+        
+        var attraction = new Attraction(
             id,
             cmd.Name,
             cmd.CategoryId,
-            cmd.LocationName,
-            cmd.Latitude,
-            cmd.Longitude,
+            new Location(cmd.Latitude, cmd.Longitude, cmd.LocationName),
             cmd.Capacity,
             cmd.CatalogFrom,
             cmd.CatalogTo
-        ), ct);
+        );
+
+        await domainRepo.AddAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
 
         return id;
     }
@@ -96,22 +103,26 @@ public sealed record UpdateAttractionCommand(
 ) : IRequest;
 
 public sealed class UpdateAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<UpdateAttractionCommand>
 {
     public async Task Handle(UpdateAttractionCommand cmd, CancellationToken ct)
     {
-        await attractionRepo.UpdateAsync(new UpdateAttractionData(
-            cmd.Id,
+        var attraction = await domainRepo.GetByIdAsync(cmd.Id, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.Id} not found.");
+
+        attraction.Update(
             cmd.Name,
             cmd.CategoryId,
-            cmd.LocationName,
-            cmd.Latitude,
-            cmd.Longitude,
+            new Location(cmd.Latitude, cmd.Longitude, cmd.LocationName),
             cmd.Capacity,
             cmd.CatalogFrom,
             cmd.CatalogTo
-        ), ct);
+        );
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
     }
 }
 
@@ -164,11 +175,19 @@ public sealed class UpdateAttractionCommandValidator : AbstractValidator<UpdateA
 public sealed record DeleteAttractionCommand(Guid Id) : IRequest;
 
 public sealed class DeleteAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<DeleteAttractionCommand>
 {
     public async Task Handle(DeleteAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.DeleteAsync(cmd.Id, ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.Id, ct);
+        if (attraction is not null)
+        {
+            await domainRepo.DeleteAsync(attraction, ct);
+            await uow.SaveChangesAsync(ct);
+        }
+    }
 }
 
 public sealed class DeleteAttractionCommandValidator : AbstractValidator<DeleteAttractionCommand>
@@ -189,11 +208,20 @@ public sealed class DeleteAttractionCommandValidator : AbstractValidator<DeleteA
 public sealed record PublishAttractionCommand(Guid AttractionId) : IRequest;
 
 public sealed class PublishAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<PublishAttractionCommand>
 {
     public async Task Handle(PublishAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.UpdateStateAsync(cmd.AttractionId, "Catalog", ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        attraction.Publish();
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class PublishAttractionCommandValidator : AbstractValidator<PublishAttractionCommand>
@@ -214,11 +242,20 @@ public sealed class PublishAttractionCommandValidator : AbstractValidator<Publis
 public sealed record ArchiveAttractionCommand(Guid AttractionId) : IRequest;
 
 public sealed class ArchiveAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<ArchiveAttractionCommand>
 {
     public async Task Handle(ArchiveAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.UpdateStateAsync(cmd.AttractionId, "Archived", ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        attraction.Archive();
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class ArchiveAttractionCommandValidator : AbstractValidator<ArchiveAttractionCommand>
@@ -243,11 +280,20 @@ public sealed record SetAttractionCatalogWindowCommand(
 ) : IRequest;
 
 public sealed class SetAttractionCatalogWindowCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<SetAttractionCatalogWindowCommand>
 {
     public async Task Handle(SetAttractionCatalogWindowCommand cmd, CancellationToken ct)
-        => await attractionRepo.UpdateCatalogWindowAsync(cmd.AttractionId, cmd.CatalogFrom, cmd.CatalogTo, ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        attraction.SetCatalogWindow(cmd.CatalogFrom, cmd.CatalogTo);
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class SetAttractionCatalogWindowCommandValidator : AbstractValidator<SetAttractionCatalogWindowCommand>
@@ -272,14 +318,23 @@ public sealed class SetAttractionCatalogWindowCommandValidator : AbstractValidat
 public sealed record AddTagToAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
 public sealed class AddTagToAttractionCommandHandler(
-    IAttractionRepository attractionRepo,
-    ITagRepository tagRepo
+    IDomainAttractionRepository domainRepo,
+    ITagRepository tagRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<AddTagToAttractionCommand>
 {
     public async Task Handle(AddTagToAttractionCommand cmd, CancellationToken ct)
     {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
         var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
-        await attractionRepo.AssignTagAsync(cmd.AttractionId, tagId, ct);
+        var tag = new Tag(tagId, cmd.TagName); // w Domain model to jest ok dla Agregatu
+        
+        attraction.AddTag(tag);
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
     }
 }
 
@@ -305,8 +360,9 @@ public sealed class AddTagToAttractionCommandValidator : AbstractValidator<AddTa
 public sealed record RemoveTagFromAttractionCommand(Guid AttractionId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromAttractionCommandHandler(
-    IAttractionRepository attractionRepo,
-    ITagRepository tagRepo
+    IDomainAttractionRepository domainRepo,
+    ITagRepository tagRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<RemoveTagFromAttractionCommand>
 {
     public async Task Handle(RemoveTagFromAttractionCommand cmd, CancellationToken ct)
@@ -314,7 +370,13 @@ public sealed class RemoveTagFromAttractionCommandHandler(
         var tagId = await tagRepo.GetIdByNameAsync(cmd.TagName, ct);
         if (tagId.HasValue)
         {
-            await attractionRepo.RemoveTagAsync(cmd.AttractionId, tagId.Value, ct);
+            var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+                ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+            attraction.RemoveTag(tagId.Value);
+
+            await domainRepo.UpdateAsync(attraction, ct);
+            await uow.SaveChangesAsync(ct);
         }
     }
 }
@@ -340,11 +402,24 @@ public sealed class RemoveTagFromAttractionCommandValidator : AbstractValidator<
 public sealed record AttachRuleToAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
 public sealed class AttachRuleToAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    Tripder.Domain.AttractionDefinition.Repositories.IRuleDefinitionRepository domainRuleRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<AttachRuleToAttractionCommand>
 {
     public async Task Handle(AttachRuleToAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.AssignRuleAsync(cmd.AttractionId, cmd.RuleId, ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        var rule = await domainRuleRepo.GetByIdAsync(cmd.RuleId, ct)
+            ?? throw new KeyNotFoundException($"Rule {cmd.RuleId} not found.");
+
+        attraction.AddRule(rule);
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class AttachRuleToAttractionCommandValidator : AbstractValidator<AttachRuleToAttractionCommand>
@@ -372,11 +447,20 @@ public sealed class AttachRuleToAttractionCommandValidator : AbstractValidator<A
 public sealed record DetachRuleFromAttractionCommand(Guid AttractionId, Guid RuleId) : IRequest;
 
 public sealed class DetachRuleFromAttractionCommandHandler(
-    IAttractionRepository attractionRepo
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<DetachRuleFromAttractionCommand>
 {
     public async Task Handle(DetachRuleFromAttractionCommand cmd, CancellationToken ct)
-        => await attractionRepo.RemoveRuleAsync(cmd.AttractionId, cmd.RuleId, ct);
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        attraction.RemoveRule(cmd.RuleId);
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class DetachRuleFromAttractionCommandValidator : AbstractValidator<DetachRuleFromAttractionCommand>

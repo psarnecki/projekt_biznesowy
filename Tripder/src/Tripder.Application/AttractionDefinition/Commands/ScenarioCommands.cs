@@ -1,6 +1,9 @@
 ﻿using FluentValidation;
 using MediatR;
 using Tripder.Application.AttractionDefinition.Repositories;
+using Tripder.Domain.Common;
+using Tripder.Domain.AttractionDefinition.Entities;
+using IDomainScenarioRepository = Tripder.Domain.AttractionDefinition.Repositories.IScenarioRepository;
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
@@ -16,19 +19,23 @@ public sealed record AddScenarioCommand(
 ) : IRequest<Guid>;
 
 public sealed class AddScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<AddScenarioCommand, Guid>
 {
     public async Task<Guid> Handle(AddScenarioCommand cmd, CancellationToken ct)
     {
         var id = Guid.NewGuid();
-        await scenarioRepo.AddAsync(new NewScenarioData(
+        var scenario = new Scenario(
             id,
             cmd.AttractionId,
             cmd.Name,
             cmd.Description,
             cmd.DurationMinutes
-        ), ct);
+        );
+
+        await domainRepo.AddAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
 
         return id;
     }
@@ -70,17 +77,19 @@ public sealed record UpdateScenarioCommand(
 ) : IRequest;
 
 public sealed class UpdateScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<UpdateScenarioCommand>
 {
     public async Task Handle(UpdateScenarioCommand cmd, CancellationToken ct)
     {
-        await scenarioRepo.UpdateAsync(new UpdateScenarioData(
-            cmd.ScenarioId,
-            cmd.Name,
-            cmd.Description,
-            cmd.DurationMinutes
-        ), ct);
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        scenario.Update(cmd.Name, cmd.Description, cmd.DurationMinutes);
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
     }
 }
 
@@ -121,11 +130,19 @@ public sealed class UpdateScenarioCommandValidator : AbstractValidator<UpdateSce
 public sealed record RemoveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class RemoveScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<RemoveScenarioCommand>
 {
     public async Task Handle(RemoveScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.DeleteAsync(cmd.ScenarioId, ct);
+    {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct);
+        if (scenario is not null)
+        {
+            await domainRepo.DeleteAsync(scenario, ct);
+            await uow.SaveChangesAsync(ct);
+        }
+    }
 }
 
 public sealed class RemoveScenarioCommandValidator : AbstractValidator<RemoveScenarioCommand>
@@ -153,11 +170,20 @@ public sealed class RemoveScenarioCommandValidator : AbstractValidator<RemoveSce
 public sealed record PublishScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class PublishScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<PublishScenarioCommand>
 {
     public async Task Handle(PublishScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.UpdateStateAsync(cmd.ScenarioId, "Catalog", ct);
+    {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        scenario.Publish();
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class PublishScenarioCommandValidator : AbstractValidator<PublishScenarioCommand>
@@ -178,11 +204,20 @@ public sealed class PublishScenarioCommandValidator : AbstractValidator<PublishS
 public sealed record ArchiveScenarioCommand(Guid AttractionId, Guid ScenarioId) : IRequest;
 
 public sealed class ArchiveScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<ArchiveScenarioCommand>
 {
     public async Task Handle(ArchiveScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.UpdateStateAsync(cmd.ScenarioId, "Archived", ct);
+    {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        scenario.Archive();
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class ArchiveScenarioCommandValidator : AbstractValidator<ArchiveScenarioCommand>
@@ -203,14 +238,23 @@ public sealed class ArchiveScenarioCommandValidator : AbstractValidator<ArchiveS
 public sealed record AddTagToScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
 public sealed class AddTagToScenarioCommandHandler(
-    IScenarioRepository scenarioRepo,
-    ITagRepository tagRepo
+    IDomainScenarioRepository domainRepo,
+    ITagRepository tagRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<AddTagToScenarioCommand>
 {
     public async Task Handle(AddTagToScenarioCommand cmd, CancellationToken ct)
     {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
         var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
-        await scenarioRepo.AssignTagAsync(cmd.ScenarioId, tagId, ct);
+        var tag = new Tag(tagId, cmd.TagName);
+        
+        scenario.AddTag(tag);
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
     }
 }
 
@@ -243,8 +287,9 @@ public sealed class AddTagToScenarioCommandValidator : AbstractValidator<AddTagT
 public sealed record RemoveTagFromScenarioCommand(Guid AttractionId, Guid ScenarioId, string TagName) : IRequest;
 
 public sealed class RemoveTagFromScenarioCommandHandler(
-    IScenarioRepository scenarioRepo,
-    ITagRepository tagRepo
+    IDomainScenarioRepository domainRepo,
+    ITagRepository tagRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<RemoveTagFromScenarioCommand>
 {
     public async Task Handle(RemoveTagFromScenarioCommand cmd, CancellationToken ct)
@@ -252,7 +297,13 @@ public sealed class RemoveTagFromScenarioCommandHandler(
         var tagId = await tagRepo.GetIdByNameAsync(cmd.TagName, ct);
         if (tagId.HasValue)
         {
-            await scenarioRepo.RemoveTagAsync(cmd.ScenarioId, tagId.Value, ct);
+            var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+                ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+            scenario.RemoveTag(tagId.Value);
+
+            await domainRepo.UpdateAsync(scenario, ct);
+            await uow.SaveChangesAsync(ct);
         }
     }
 }
@@ -285,11 +336,24 @@ public sealed class RemoveTagFromScenarioCommandValidator : AbstractValidator<Re
 public sealed record AttachRuleToScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
 public sealed class AttachRuleToScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    Tripder.Domain.AttractionDefinition.Repositories.IRuleDefinitionRepository domainRuleRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<AttachRuleToScenarioCommand>
 {
     public async Task Handle(AttachRuleToScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.AssignRuleAsync(cmd.ScenarioId, cmd.RuleId, ct);
+    {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        var rule = await domainRuleRepo.GetByIdAsync(cmd.RuleId, ct)
+            ?? throw new KeyNotFoundException($"Rule {cmd.RuleId} not found.");
+
+        scenario.AddRule(rule);
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class AttachRuleToScenarioCommandValidator : AbstractValidator<AttachRuleToScenarioCommand>
@@ -323,11 +387,20 @@ public sealed class AttachRuleToScenarioCommandValidator : AbstractValidator<Att
 public sealed record DetachRuleFromScenarioCommand(Guid AttractionId, Guid ScenarioId, Guid RuleId) : IRequest;
 
 public sealed class DetachRuleFromScenarioCommandHandler(
-    IScenarioRepository scenarioRepo
+    IDomainScenarioRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<DetachRuleFromScenarioCommand>
 {
     public async Task Handle(DetachRuleFromScenarioCommand cmd, CancellationToken ct)
-        => await scenarioRepo.RemoveRuleAsync(cmd.ScenarioId, cmd.RuleId, ct);
+    {
+        var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
+            ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        scenario.RemoveRule(cmd.RuleId);
+
+        await domainRepo.UpdateAsync(scenario, ct);
+        await uow.SaveChangesAsync(ct);
+    }
 }
 
 public sealed class DetachRuleFromScenarioCommandValidator : AbstractValidator<DetachRuleFromScenarioCommand>

@@ -1,6 +1,10 @@
 ﻿using FluentValidation;
 using MediatR;
 using Tripder.Application.AttractionDefinition.Repositories;
+using Tripder.Domain.Common;
+using Tripder.Domain.AttractionDefinition.Entities;
+using Tripder.Domain.AttractionDefinition.Enums;
+using IDomainRuleDefinitionRepository = Tripder.Domain.AttractionDefinition.Repositories.IRuleDefinitionRepository;
 
 namespace Tripder.Application.AttractionDefinition.Commands;
 
@@ -21,27 +25,37 @@ public sealed record CreateRuleDefinitionCommand(
 ) : IRequest<Guid>;
 
 public sealed class CreateRuleDefinitionCommandHandler(
-    IRuleDefinitionRepository ruleRepo
+    IDomainRuleDefinitionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<CreateRuleDefinitionCommand, Guid>
 {
     public async Task<Guid> Handle(CreateRuleDefinitionCommand cmd, CancellationToken ct)
     {
         var id = Guid.NewGuid();
-        await ruleRepo.AddAsync(new NewRuleData(
+        
+        var rule = new RuleDefinition(
             id,
-            cmd.RuleType,
-            cmd.Effect,
+            ParseRuleType(cmd.RuleType),
+            ParseRuleEffect(cmd.Effect),
             cmd.Priority,
             cmd.TimeFrom,
             cmd.TimeTo,
             cmd.DateFrom,
             cmd.DateTo,
-            cmd.Params,
-            cmd.DayOfWeekIds
-        ), ct);
+            cmd.Params
+        );
+
+        // TODO: Mapowanie DayOfWeekIds jesli to potrzebne w domenie bezposrednio.
+        // W DDD days powinno sie np przypisywac przez rule.AddDay(...)
+
+        await domainRepo.AddAsync(rule, ct);
+        await uow.SaveChangesAsync(ct);
 
         return id;
     }
+
+    private static RuleType ParseRuleType(string value) => Enum.Parse<RuleType>(value, true);
+    private static RuleEffect ParseRuleEffect(string value) => Enum.Parse<RuleEffect>(value, true);
 }
 
 public sealed class CreateRuleDefinitionCommandValidator : AbstractValidator<CreateRuleDefinitionCommand>
@@ -98,22 +112,32 @@ public sealed record UpdateRuleDefinitionCommand(
 ) : IRequest;
 
 public sealed class UpdateRuleDefinitionCommandHandler(
-    IRuleDefinitionRepository ruleRepo
+    IDomainRuleDefinitionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<UpdateRuleDefinitionCommand>
 {
     public async Task Handle(UpdateRuleDefinitionCommand cmd, CancellationToken ct)
-        => await ruleRepo.UpdateAsync(new UpdateRuleData(
-            cmd.RuleId,
-            cmd.RuleType,
-            cmd.Effect,
+    {
+        var rule = await domainRepo.GetByIdAsync(cmd.RuleId, ct)
+            ?? throw new KeyNotFoundException($"Rule {cmd.RuleId} not found.");
+
+        rule.Update(
+            ParseRuleType(cmd.RuleType),
+            ParseRuleEffect(cmd.Effect),
             cmd.Priority,
             cmd.TimeFrom,
             cmd.TimeTo,
             cmd.DateFrom,
             cmd.DateTo,
-            cmd.Params,
-            cmd.DayOfWeekIds
-        ), ct);
+            cmd.Params
+        );
+
+        await domainRepo.UpdateAsync(rule, ct);
+        await uow.SaveChangesAsync(ct);
+    }
+    
+    private static RuleType ParseRuleType(string value) => Enum.Parse<RuleType>(value, true);
+    private static RuleEffect ParseRuleEffect(string value) => Enum.Parse<RuleEffect>(value, true);
 }
 
 public sealed class UpdateRuleDefinitionCommandValidator : AbstractValidator<UpdateRuleDefinitionCommand>
@@ -158,11 +182,19 @@ public sealed class UpdateRuleDefinitionCommandValidator : AbstractValidator<Upd
 public sealed record DeleteRuleDefinitionCommand(Guid RuleId) : IRequest;
 
 public sealed class DeleteRuleDefinitionCommandHandler(
-    IRuleDefinitionRepository ruleRepo
+    IDomainRuleDefinitionRepository domainRepo,
+    IUnitOfWork uow
 ) : IRequestHandler<DeleteRuleDefinitionCommand>
 {
     public async Task Handle(DeleteRuleDefinitionCommand cmd, CancellationToken ct)
-        => await ruleRepo.DeleteAsync(cmd.RuleId, ct);
+    {
+        var rule = await domainRepo.GetByIdAsync(cmd.RuleId, ct);
+        if (rule is not null)
+        {
+            await domainRepo.DeleteAsync(rule, ct);
+            await uow.SaveChangesAsync(ct);
+        }
+    }
 }
 
 public sealed class DeleteRuleDefinitionCommandValidator : AbstractValidator<DeleteRuleDefinitionCommand>

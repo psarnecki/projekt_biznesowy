@@ -9,13 +9,15 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
+        var assembly = typeof(DependencyInjection).Assembly;
+
         services.AddMediatR(cfg =>
         {
-            cfg.RegisterServicesFromAssembly(typeof(AssemblyMarker).Assembly);
+            cfg.RegisterServicesFromAssembly(assembly);
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
 
-        services.AddValidatorsFromAssembly(typeof(AssemblyMarker).Assembly);
+        services.AddValidatorsFromAssembly(assembly);
 
         return services;
     }
