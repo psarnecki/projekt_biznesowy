@@ -76,6 +76,23 @@ public class AttractionsController : ControllerBase
         return NoContent();
     }
 
+    [HttpPatch("{id:guid}/make-internal")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> MakeInternal(Guid id, CancellationToken ct)
+    {
+        await _mediator.Send(new MakeAttractionInternalCommand(id), ct);
+        return NoContent();
+    }
+
+    [HttpPatch("{id:guid}/catalog-window")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    public async Task<IActionResult> SetCatalogWindow(Guid id, [FromBody] SetAttractionCatalogWindowCommand body, CancellationToken ct)
+    {
+        if (id != body.AttractionId) return BadRequest("Id w URL musi być takie samo jak w body.");
+        await _mediator.Send(body, ct);
+        return NoContent();
+    }
+
     [HttpPost("{id:guid}/tags")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> AddTag(Guid id, [FromBody] TagNameBody body, CancellationToken ct)

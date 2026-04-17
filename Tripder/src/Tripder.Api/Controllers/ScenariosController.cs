@@ -19,6 +19,14 @@ public class ScenariosController : ControllerBase
         _mediator = mediator;
     }
 
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> GetAll(Guid attractionId, CancellationToken ct)
+    {
+        var result = await _mediator.Send(new GetScenariosByAttractionQuery(attractionId), ct);
+        return Ok(result);
+    }
+
     [HttpGet("{scenarioId:guid}")]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

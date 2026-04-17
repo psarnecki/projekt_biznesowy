@@ -80,6 +80,9 @@ public sealed class UpdateScenarioCommandHandler(
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
         scenario.Update(cmd.Name, cmd.Description, cmd.DurationMinutes);
 
         await domainRepo.UpdateAsync(scenario, ct);
@@ -128,7 +131,7 @@ public sealed class RemoveScenarioCommandHandler(
     public async Task Handle(RemoveScenarioCommand cmd, CancellationToken ct)
     {
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct);
-        if (scenario is not null)
+        if (scenario is not null && scenario.AttractionId == cmd.AttractionId)
         {
             await domainRepo.DeleteAsync(scenario, ct);
             await uow.SaveChangesAsync(ct);
@@ -167,6 +170,9 @@ public sealed class PublishScenarioCommandHandler(
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
         scenario.Publish();
 
         await domainRepo.UpdateAsync(scenario, ct);
@@ -197,6 +203,9 @@ public sealed class ArchiveScenarioCommandHandler(
     {
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
         scenario.Archive();
 
@@ -229,6 +238,9 @@ public sealed class AddTagToScenarioCommandHandler(
     {
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
         var tagId = await tagRepo.GetOrCreateByNameAsync(cmd.TagName, ct);
         var tag = new Tag(tagId, cmd.TagName);
@@ -279,6 +291,9 @@ public sealed class RemoveTagFromScenarioCommandHandler(
             var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
                 ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
+            if (scenario.AttractionId != cmd.AttractionId)
+                throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
             scenario.RemoveTag(tagId.Value);
 
             await domainRepo.UpdateAsync(scenario, ct);
@@ -321,6 +336,9 @@ public sealed class AttachRuleToScenarioCommandHandler(
     {
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
         var rule = await domainRuleRepo.GetByIdAsync(cmd.RuleId, ct)
             ?? throw new KeyNotFoundException($"Rule {cmd.RuleId} not found.");
@@ -368,6 +386,9 @@ public sealed class DetachRuleFromScenarioCommandHandler(
     {
         var scenario = await domainRepo.GetByIdAsync(cmd.ScenarioId, ct)
             ?? throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
+
+        if (scenario.AttractionId != cmd.AttractionId)
+            throw new KeyNotFoundException($"Scenario {cmd.ScenarioId} not found.");
 
         scenario.RemoveRule(cmd.RuleId);
 
