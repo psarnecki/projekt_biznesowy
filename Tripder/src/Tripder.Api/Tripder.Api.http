@@ -1,6 +1,87 @@
-@Tripder.Api_HostAddress = http://localhost:5225
+@host = http://localhost:5225
+@attractionId = 00000000-0000-0000-0000-000000000000
+@scenarioId = 00000000-0000-0000-0000-000000000000
+    
+# Po wykonaniu POST dla attraction lub scenario, 
+# należy skopiować i podmienić wygenerowane ID z odpowiedzi
+# dla powyższych zmiennych @attractionId oraz @scenarioId,
+# jest to potrzebne do dalszych testów PATCH
 
-GET {{Tripder.Api_HostAddress}}/weatherforecast/
-Accept: application/json
+### Attractions
+
+GET {{host}}/api/attractions
 
 ###
+POST {{host}}/api/attractions
+Content-Type: application/json
+
+{
+  "name": "Testowa atrakcja",
+  "categoryId": "10000000-0000-0000-0000-000000000001",
+  "locationName": "Warszawa",
+  "latitude": 52.2297,
+  "longitude": 21.0122,
+  "capacity": 100,
+  "catalogFrom": "2026-05-01",
+  "catalogTo": null
+}
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/publish
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/archive
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/make-internal
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/catalog-window
+Content-Type: application/json
+
+{
+  "attractionId": "{{attractionId}}",
+  "catalogStart": "2026-05-01T00:00:00Z",
+  "catalogEnd": null
+}
+
+### Rules
+
+GET {{host}}/api/rules
+
+###
+POST {{host}}/api/rules
+Content-Type: application/json
+
+{
+  "ruleType": "Weekly",
+  "effect": "Allow",
+  "priority": 1,
+  "timeFrom": "08:00:00",
+  "timeTo": "16:00:00",
+  "dateFrom": null,
+  "dateTo": null,
+  "params": null,
+  "dayOfWeekIds": []
+}
+
+### Scenarios
+
+GET {{host}}/api/attractions/{{attractionId}}/scenarios
+
+###
+POST {{host}}/api/attractions/{{attractionId}}/scenarios
+Content-Type: application/json
+
+{
+  "attractionId": "{{attractionId}}",
+  "name": "Standardowe zwiedzanie",
+  "description": "Podstawowa trasa wycieczki obejmująca główne atrakcje obiektu.",
+  "durationMinutes": 90
+}
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/scenarios/{{scenarioId}}/publish
+
+###
+PATCH {{host}}/api/attractions/{{attractionId}}/scenarios/{{scenarioId}}/archive

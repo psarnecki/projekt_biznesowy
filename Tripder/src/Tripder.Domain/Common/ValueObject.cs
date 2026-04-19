@@ -1,8 +1,6 @@
 namespace Tripder.Domain.Common;
 
-// Baza dla obiektów, które NIE MAJĄ własnego ID, a definiują je wyłącznie ich wartości (jak nasz Location).
-// Ta klasa zawiera magiczny kod, który pozwala C# automatycznie porównywać dwa obiekty
-// po ich polach (właściwościach), zamiast po referencji w pamięci.
+// Base class for value objects compared by value
 public abstract class ValueObject
 {
     protected abstract IEnumerable<object> GetEqualityComponents();

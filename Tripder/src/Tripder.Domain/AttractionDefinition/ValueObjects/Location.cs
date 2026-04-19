@@ -2,23 +2,24 @@ using Tripder.Domain.Common;
 
 namespace Tripder.Domain.AttractionDefinition.ValueObjects;
 
-// Location to klasyczny Value Object (Obiekt Wartości) w podejściu DDD.
-// Dlaczego to nie jest Entity? Bo lokalizacja nie ma swojej "tożsamości" (ID). 
-// Dwie lokalizacje z tymi samymi współrzędnymi to z biznesowego punktu widzenia to samo miejsce.
+// Represents a location value object
 public class Location : ValueObject
 {
-    public double Latitude { get; }
-    public double Longitude { get; }
-    public string LocationName { get; }
+    public double Latitude { get; private set; }
+    public double Longitude { get; private set; }
+    public string LocationName { get; private set; } = string.Empty;
 
-    // Konstruktor wymusza walidację przy samym tworzeniu obiektu.
-    // Dzięki temu obiekt Location NIGDY nie znajdzie się w niepoprawnym stanie.
-    // Nie da się tu wrzucić współrzędnych z kosmosu (np. Latitude = 900), bo system od razu rzuci błędem.
+    // Parameterless constructor for EF and serialization
+    private Location()
+    {
+    }
+
+    // Validates the location when it is created
     public Location(double latitude, double longitude, string locationName)
     {
         if (latitude < -90 || latitude > 90)
             throw new ArgumentOutOfRangeException(nameof(latitude), "Latitude musi być w przedziale od -90 do 90.");
-            
+
         if (longitude < -180 || longitude > 180)
             throw new ArgumentOutOfRangeException(nameof(longitude), "Longitude musi być w przedziale od -180 do 180.");
 
@@ -30,8 +31,7 @@ public class Location : ValueObject
         LocationName = locationName;
     }
 
-    // Nadpisujemy tę metodę z bazowego ValueObject, żeby system wiedział, 
-    // po jakich polach ma sprawdzać równość dwóch lokalizacji.
+    // Returns the fields used for equality
     protected override IEnumerable<object> GetEqualityComponents()
     {
         yield return Latitude;

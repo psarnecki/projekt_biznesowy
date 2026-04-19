@@ -1,16 +1,15 @@
 using Tripder.Domain.AttractionDefinition.Enums;
+using Tripder.Domain.AttractionDefinition.ValueObjects;
+using Tripder.Domain.Common;
 
 namespace Tripder.Domain.AttractionDefinition.Entities;
 
-public class Attraction
+public class Attraction : AggregateRoot
 {
-    public Guid Id { get; private set; }
     public string Name { get; private set; } = string.Empty;
     public Guid CategoryId { get; private set; }
     public Category Category { get; private set; } = null!;
-    public string LocationName { get; private set; } = string.Empty;
-    public double Latitude { get; private set; }
-    public double Longitude { get; private set; }
+    public Location Location { get; private set; } = null!;
     public int? Capacity { get; private set; }
     public DateOnly? CatalogFrom { get; private set; }
     public DateOnly? CatalogTo { get; private set; }
@@ -31,9 +30,7 @@ public class Attraction
         Guid id,
         string name,
         Guid categoryId,
-        string locationName,
-        double latitude,
-        double longitude,
+        Location location,
         int? capacity = null,
         DateOnly? catalogFrom = null,
         DateOnly? catalogTo = null)
@@ -41,9 +38,7 @@ public class Attraction
         Id = id;
         Name = name;
         CategoryId = categoryId;
-        LocationName = locationName;
-        Latitude = latitude;
-        Longitude = longitude;
+        Location = location;
         Capacity = capacity;
         CatalogFrom = catalogFrom;
         CatalogTo = catalogTo;
@@ -73,6 +68,15 @@ public class Attraction
     {
         CatalogFrom = from;
         CatalogTo = to;
+    }
+
+    public void Update(string name, Guid categoryId, Location location, int? capacity, DateOnly? catalogFrom, DateOnly? catalogTo)
+    {
+        Name = name;
+        CategoryId = categoryId;
+        Location = location;
+        Capacity = capacity;
+        SetCatalogWindow(catalogFrom, catalogTo);
     }
 
     public void AddScenario(Scenario scenario)
@@ -106,7 +110,7 @@ public class Attraction
         if (rule is not null) _rules.Remove(rule);
     }
     
-    /// Returns true if the attraction's global catalog window is active on a given date.
+    /// Returns true if the attraction's global catalog window is active on a given date
     public bool IsVisibleOnDate(DateOnly date)
     {
         if (State != AttractionState.Catalog) return false;
@@ -115,14 +119,14 @@ public class Attraction
         return true;
     }
     
-    /// Haversine distance in km to a point.
+    /// Haversine distance in km to a point
     public double DistanceKmTo(double lat, double lon)
     {
         const double R = 6371;
-        var dLat = ToRad(lat - Latitude);
-        var dLon = ToRad(lon - Longitude);
+        var dLat = ToRad(lat - Location.Latitude);
+        var dLon = ToRad(lon - Location.Longitude);
         var a = Math.Sin(dLat / 2) * Math.Sin(dLat / 2) +
-                Math.Cos(ToRad(Latitude)) * Math.Cos(ToRad(lat)) *
+                Math.Cos(ToRad(Location.Latitude)) * Math.Cos(ToRad(lat)) *
                 Math.Sin(dLon / 2) * Math.Sin(dLon / 2);
         return R * 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
     }

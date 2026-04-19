@@ -6,6 +6,7 @@ public class Scenario
 {
     public Guid Id { get; private set; }
     public Guid AttractionId { get; private set; }
+    public Attraction Attraction { get; private set; } = null!;
     public string Name { get; private set; } = string.Empty;
     public string Description { get; private set; } = string.Empty;
     public int DurationMinutes { get; private set; }
@@ -93,8 +94,8 @@ public class Scenario
         if (rule is not null) _rules.Remove(rule);
     }
     
-    /// Evaluates scenario availability using its rules (highest priority wins).
-    /// Returns null if no rules match (treat as allowed by default).
+    /// Evaluates scenario availability using its rules (highest priority wins)
+    /// Returns null if no rules match (treat as allowed by default)
     public bool IsAvailableAt(DateOnly date, TimeOnly time)
     {
         if (State != ScenarioState.Catalog) return false;
