@@ -42,8 +42,15 @@ public sealed class CreateRuleDefinitionCommandHandler(
             cmd.Params
         );
 
-        // TODO: Mapowanie DayOfWeekIds jesli to potrzebne w domenie bezposrednio.
-        // W DDD days powinno sie np przypisywac przez rule.AddDay(...)
+        if (cmd.DayOfWeekIds is { Count: > 0 })
+        {
+            foreach (var dayId in cmd.DayOfWeekIds)
+            {
+                var dayName = await domainRepo.GetDayOfWeekNameAsync(dayId, ct)
+                    ?? throw new KeyNotFoundException($"DayOfWeekEntry {dayId} not found.");
+                rule.AddDay(new DayOfWeekEntry(dayId, dayName));
+            }
+        }
 
         await domainRepo.AddAsync(rule, ct);
         await uow.SaveChangesAsync(ct);
@@ -64,12 +71,12 @@ public sealed class CreateRuleDefinitionCommandValidator : AbstractValidator<Cre
     {
         RuleFor(x => x.RuleType)
             .NotEmpty()
-            .Must(t => ValidRuleTypes.Contains(t))
+            .Must(t => ValidRuleTypes.Contains(t, StringComparer.OrdinalIgnoreCase))
             .WithMessage($"RuleType musi być jedną z wartości: {string.Join(", ", ValidRuleTypes)}.");
 
         RuleFor(x => x.Effect)
             .NotEmpty()
-            .Must(e => ValidEffects.Contains(e))
+            .Must(e => ValidEffects.Contains(e, StringComparer.OrdinalIgnoreCase))
             .WithMessage($"Effect musi być jedną z wartości: {string.Join(", ", ValidEffects)}.");
 
         RuleFor(x => x.Priority)
@@ -126,6 +133,17 @@ public sealed class UpdateRuleDefinitionCommandHandler(
             cmd.Params
         );
 
+        rule.ClearDays();
+        if (cmd.DayOfWeekIds is { Count: > 0 })
+        {
+            foreach (var dayId in cmd.DayOfWeekIds)
+            {
+                var dayName = await domainRepo.GetDayOfWeekNameAsync(dayId, ct)
+                    ?? throw new KeyNotFoundException($"DayOfWeekEntry {dayId} not found.");
+                rule.AddDay(new DayOfWeekEntry(dayId, dayName));
+            }
+        }
+
         await domainRepo.UpdateAsync(rule, ct);
         await uow.SaveChangesAsync(ct);
     }
@@ -148,12 +166,12 @@ public sealed class UpdateRuleDefinitionCommandValidator : AbstractValidator<Upd
 
         RuleFor(x => x.RuleType)
             .NotEmpty()
-            .Must(t => ValidRuleTypes.Contains(t))
+            .Must(t => ValidRuleTypes.Contains(t, StringComparer.OrdinalIgnoreCase))
             .WithMessage($"RuleType musi być jedną z wartości: {string.Join(", ", ValidRuleTypes)}.");
 
         RuleFor(x => x.Effect)
             .NotEmpty()
-            .Must(e => ValidEffects.Contains(e))
+            .Must(e => ValidEffects.Contains(e, StringComparer.OrdinalIgnoreCase))
             .WithMessage($"Effect musi być jedną z wartości: {string.Join(", ", ValidEffects)}.");
 
         RuleFor(x => x.Priority)

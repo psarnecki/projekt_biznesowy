@@ -47,6 +47,8 @@ public class RuleDefinition
             _days.Add(day);
     }
 
+    public void ClearDays() => _days.Clear();
+
     public void Update(RuleType ruleType, RuleEffect effect, int priority, TimeOnly? timeFrom, TimeOnly? timeTo, DateOnly? dateFrom, DateOnly? dateTo, string? @params)
     {
         RuleType = ruleType;

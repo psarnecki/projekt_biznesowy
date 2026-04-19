@@ -9,4 +9,5 @@ public interface IRuleDefinitionRepository
     Task AddAsync(RuleDefinition rule, CancellationToken ct = default);
     Task UpdateAsync(RuleDefinition rule, CancellationToken ct = default);
     Task DeleteAsync(RuleDefinition rule, CancellationToken ct = default);
+    Task<string?> GetDayOfWeekNameAsync(Guid dayId, CancellationToken ct = default);
 }

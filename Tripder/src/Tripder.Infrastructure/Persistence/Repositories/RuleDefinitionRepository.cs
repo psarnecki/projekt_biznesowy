@@ -70,6 +70,14 @@ public class RuleDefinitionRepository : IApplicationRuleDefinitionRepository, ID
         return Task.CompletedTask;
     }
 
+    public async Task<string?> GetDayOfWeekNameAsync(Guid dayId, CancellationToken ct = default)
+    {
+        var entry = await _db.Set<DayOfWeekEntry>()
+            .AsNoTracking()
+            .FirstOrDefaultAsync(d => d.Id == dayId, ct);
+        return entry?.Name;
+    }
+
     private static RuleDefinitionDto Map(RuleDefinition rule)
         => new(
             rule.Id,

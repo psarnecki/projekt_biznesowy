@@ -446,3 +446,33 @@ public sealed class DetachRuleFromAttractionCommandValidator : AbstractValidator
         RuleFor(x => x.RuleId).NotEmpty();
     }
 }
+// Make attraction Internal (Catalog → Internal)
+public sealed record MakeAttractionInternalCommand(Guid AttractionId) : IRequest;
+
+public sealed class MakeAttractionInternalCommandHandler(
+    IDomainAttractionRepository domainRepo,
+    IUnitOfWork uow
+) : IRequestHandler<MakeAttractionInternalCommand>
+{
+    public async Task Handle(MakeAttractionInternalCommand cmd, CancellationToken ct)
+    {
+        var attraction = await domainRepo.GetByIdAsync(cmd.AttractionId, ct)
+            ?? throw new KeyNotFoundException($"Attraction {cmd.AttractionId} not found.");
+
+        attraction.MakeInternal();
+
+        await domainRepo.UpdateAsync(attraction, ct);
+        await uow.SaveChangesAsync(ct);
+    }
+}
+
+public sealed class MakeAttractionInternalCommandValidator : AbstractValidator<MakeAttractionInternalCommand>
+{
+    public MakeAttractionInternalCommandValidator(IAttractionRepository attractionRepo)
+    {
+        RuleFor(x => x.AttractionId)
+            .NotEmpty()
+            .MustAsync(async (id, ct) => await attractionRepo.ExistsAsync(id, ct))
+            .WithMessage("Atrakcja o podanym Id nie istnieje.");
+    }
+}

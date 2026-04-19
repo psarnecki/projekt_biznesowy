@@ -9,6 +9,16 @@ public static class DataSeeder
 {
     public static async Task SeedAsync(AppDbContext db)
     {
+        await db.Database.ExecuteSqlRawAsync(@"
+            DO $$ DECLARE
+                r RECORD;
+            BEGIN
+                FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = current_schema() AND tablename != '__EFMigrationsHistory') LOOP
+                    EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' RESTART IDENTITY CASCADE;';
+                END LOOP;
+            END $$;
+        ");
+        
         if (await db.Attractions.AnyAsync())
             return;
         
