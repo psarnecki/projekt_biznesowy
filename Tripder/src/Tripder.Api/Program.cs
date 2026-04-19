@@ -1,10 +1,9 @@
-using FluentValidation;
-using Microsoft.AspNetCore.Diagnostics;
 using Scalar.AspNetCore;
 using Tripder.Application;
 using Tripder.Infrastructure;
 using Tripder.Infrastructure.Persistence;
 using Tripder.Infrastructure.Persistence.Seeders;
+using Tripder.Api.ExceptionHandlers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,28 +33,3 @@ app.UseExceptionHandler();
 app.UseHttpsRedirection();
 app.MapControllers();
 app.Run();
-
-/// <summary>
-/// Translates domain/application exceptions to appropriate HTTP responses.
-/// </summary>
-internal sealed class GlobalExceptionHandler : IExceptionHandler
-{
-    public async ValueTask<bool> TryHandleAsync(
-        HttpContext ctx,
-        Exception exception,
-        CancellationToken ct)
-    {
-        var (status, title) = exception switch
-        {
-            ValidationException ve => (StatusCodes.Status400BadRequest,
-                string.Join("; ", ve.Errors.Select(e => e.ErrorMessage))),
-            KeyNotFoundException => (StatusCodes.Status404NotFound, exception.Message),
-            InvalidOperationException => (StatusCodes.Status422UnprocessableEntity, exception.Message),
-            _ => (StatusCodes.Status500InternalServerError, "An unexpected error occurred.")
-        };
-
-        ctx.Response.StatusCode = status;
-        await ctx.Response.WriteAsJsonAsync(new { status, title }, ct);
-        return true;
-    }
-}
