@@ -48,9 +48,19 @@ public static class DataSeeder
         var tagArt        = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000014"), "sztuka");
         var tagSport = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000015"),"sport");
 
+        // --- Tagi nowe (Wieliczka) ---
+        var tagSalt        = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000016"), "kopalnia soli");
+        var tagMining      = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000017"), "górnictwo");
+        var tagHardRoute   = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000018"), "wymagający fizycznie");
+        var tagAdultsOnly  = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000019"), "min. 10 lat");
+        var tagNoDisabled  = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000020"), "brak dostępu dla niepełnosprawnych");
+        var tagUNESCO      = new Tag(Guid.Parse("20000000-0000-0000-0000-000000000021"), "UNESCO");
+
         db.Tags.AddRange(tagFamily, tagOutdoor, tagIndoor, tagFree, tagGuided,
                          tagKids, tagWwII, tagMedieval, tagViewpoint, tagUnderground,
-                         tagNature, tagHistory, tagReligion, tagArt, tagSport);
+                         tagNature, tagHistory, tagReligion, tagArt, tagSport,
+                         tagSalt, tagMining, tagHardRoute, tagAdultsOnly, tagNoDisabled, tagUNESCO);
+        
         
         var ruleWeekdaysOnly = new RuleDefinition(
             Guid.Parse("30000000-0000-0000-0000-000000000001"),
@@ -75,7 +85,27 @@ public static class DataSeeder
             null, null,
             new DateOnly(2025, 6, 1), new DateOnly(2025, 8, 31));
 
-        db.RuleDefinitions.AddRange(ruleWeekdaysOnly, ruleWeekend, ruleSummer);
+        // --- Reguły nowe ---
+        var ruleTouristSummer = new RuleDefinition(
+            Guid.Parse("30000000-0000-0000-0000-000000000004"),
+            RuleType.Seasonal, RuleEffect.Allow, priority: 10,
+            timeFrom: new TimeOnly(7, 30), timeTo: new TimeOnly(19, 30),
+            dateFrom: new DateOnly(2026, 4, 1), dateTo: new DateOnly(2026, 10, 31));
+
+        var ruleTouristWinter = new RuleDefinition(
+            Guid.Parse("30000000-0000-0000-0000-000000000005"),
+            RuleType.Seasonal, RuleEffect.Allow, priority: 10,
+            timeFrom: new TimeOnly(8, 0), timeTo: new TimeOnly(17, 0),
+            dateFrom: new DateOnly(2026, 11, 1), dateTo: new DateOnly(2027, 3, 31));
+
+        var ruleMining = new RuleDefinition(
+            Guid.Parse("30000000-0000-0000-0000-000000000006"),
+            RuleType.Weekly, RuleEffect.Allow, priority: 10,
+            timeFrom: new TimeOnly(9, 0), timeTo: new TimeOnly(15, 0));
+
+        db.RuleDefinitions.AddRange(ruleWeekdaysOnly, ruleWeekend, ruleSummer,
+                                    ruleTouristSummer, ruleTouristWinter, ruleMining);
+        
         
         static Attraction MakeAttraction(string name, Guid categoryId, double lat, double lon,
             string locationName, int? capacity = null) =>
@@ -111,11 +141,61 @@ public static class DataSeeder
         var schS1 = MakeScenario(schindler.Id, "Kraków — czas okupacji", "Multimedialna ekspozycja o Krakowie podczas II Wojny Światowej.", 120);
         schS1.Publish(); schindler.Publish(); attractions.Add(schindler);
 
-        // 5
+        /*// 5
         var wieliczka = MakeAttraction("Kopalnia Soli Wieliczka", catHistory.Id, 49.9841, 20.0550, "ul. Daniłowicza 10, Wieliczka", 150);
         wieliczka.AddTag(tagUnderground); wieliczka.AddTag(tagGuided); wieliczka.AddTag(tagFamily);
         var wielS1 = MakeScenario(wieliczka.Id, "Trasa Turystyczna", "2 km tras podziemnych, kaplica św. Kingi, jezioro solne.", 150);
         wielS1.Publish(); wieliczka.Publish(); attractions.Add(wieliczka);
+        */
+
+        var wieliczka = MakeAttraction("Kopalnia Soli Wieliczka", catHistory.Id, 49.9841, 20.0550, "ul. Daniłowicza 10, Wieliczka");
+        wieliczka.AddTag(tagUnderground);
+        wieliczka.AddTag(tagGuided);
+        wieliczka.AddTag(tagFamily);
+        wieliczka.AddTag(tagUNESCO);
+        wieliczka.AddTag(tagSalt);
+        wieliczka.AddTag(tagHistory);
+        wieliczka.AddRule(ruleTouristSummer);
+        wieliczka.AddRule(ruleTouristWinter);
+
+        var wielS1 = new Scenario(Guid.NewGuid(), wieliczka.Id,
+            "Trasa Turystyczna",
+            "Trasa o długości ok. 3,5 km, czas zwiedzania ok. 3 godziny z przewodnikiem. " +
+            "Obejmuje 20 komór na trzech poziomach, Kaplicę Świętej Kingi wykutą w soli, " +
+            "podziemne jeziora i solne rzeźby. Zjazd windą szybem Daniłowicza, " +
+            "powrót pieszo. Temperatura pod ziemią: 17–18°C. " +
+            "Dostępna codziennie, bilety online lub w kasie.",
+            180);
+        wielS1.AddTag(tagFamily);
+        wielS1.AddTag(tagGuided);
+        wielS1.AddTag(tagKids);
+        wielS1.AddTag(tagUnderground);
+        wielS1.AddTag(tagIndoor);
+        wielS1.AddRule(ruleTouristSummer);
+        wielS1.AddRule(ruleTouristWinter);
+        wielS1.Publish();
+
+        var wielS2 = new Scenario(Guid.NewGuid(), wieliczka.Id,
+            "Trasa Górnicza",
+            "Trasa dedykowana miłośnikom historii górnictwa, czas zwiedzania ok. 2–3 godziny. " +
+            "Cztery kondygnacje, 150 m pod ziemią, klimatyczne komory wydobywcze. " +
+            "Uczestnicy wcielają się w rolę górników: pomiar metanu, wyplatanie lin, " +
+            "posługiwanie się mapą i sprzętem. W nagrodę certyfikat górnika. " +
+            "Wejście: Szyb Regis, Pl. Kościuszki 9 (inna lokalizacja niż Trasa Turystyczna!). " +
+            "Temperatura: 14–16°C. Strój ochronny i sprzęt zapewniony przez kopalnię. " +
+            "Wymagana dobra kondycja fizyczna. Dostępna wyłącznie po polsku lub angielsku.",
+            150);
+        wielS2.AddTag(tagHardRoute);
+        wielS2.AddTag(tagAdultsOnly);
+        wielS2.AddTag(tagNoDisabled);
+        wielS2.AddTag(tagGuided);
+        wielS2.AddTag(tagMining);
+        wielS2.AddTag(tagUnderground);
+        wielS2.AddRule(ruleMining);
+        wielS2.Publish();
+
+        wieliczka.Publish();
+        attractions.Add(wieliczka);
 
         // 6
         var auschwitz = MakeAttraction("Muzeum Auschwitz-Birkenau", catMuseum.Id, 50.0274, 19.2044, "ul. Więźniów Oświęcimia 20, Oświęcim", 400);
@@ -389,7 +469,7 @@ public static class DataSeeder
         
         var allScenarios = new[]
         {
-            wawelS1, sukS1, collS1, schS1, wielS1, ausS1, florS1, nHS1, kazS1, smoS1,
+            wawelS1, sukS1, collS1, schS1, wielS1, wielS2, ausS1, florS1, nHS1, kazS1, smoS1,
             mnkS1, czartS1, marS1, lagS1, kopS1, lotS1, zooS1, planS1, bloS1, lasS1,
             tynS1, ojcS1, pieS1, jcS1, kalS1, wadS1, lipS1, hutS1, szlS1, fortS1,
             rynS1, podS1, wisS1, teatS1, mocakS1, kwS1, bochS1, korzS1, mogS1, rezS1,
