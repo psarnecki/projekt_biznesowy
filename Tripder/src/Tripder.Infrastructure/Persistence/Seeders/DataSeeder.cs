@@ -171,11 +171,50 @@ public static class DataSeeder
         var lagS1 = MakeScenario(lagiewniki.Id, "Kaplica i Bazylika", "Miejsce kultu, kaplica z obrazem Jezusa Miłosiernego i nowa bazylika.", 60);
         lagS1.Publish(); lagiewniki.Publish(); attractions.Add(lagiewniki);
 
-        // 15
-        var kopiec = MakeAttraction("Kopiec Kościuszki", catHistory.Id, 50.0547, 19.8958, "al. Waszyngtona, Kraków");
-        kopiec.AddTag(tagOutdoor); kopiec.AddTag(tagViewpoint);
-        var kopS1 = MakeScenario(kopiec.Id, "Wejście na Kopiec", "Panorama Krakowa z wysokości 326 m n.p.m., fort z XIX w.", 45);
-        kopS1.Publish(); kopiec.Publish(); attractions.Add(kopiec);
+        // 15 — Kopiec Kościuszki: jedna Attraction, wiele Scenariuszy.
+        // Model Tripdera idealnie łapie "jedno miejsce fizyczne = wiele produktów do swipowania".
+        // Kaplica bł. Bronisławy to scenariusz Internal — sprzedawana w pakiecie "pełne zwiedzanie", nie solo.
+        var kopiec = MakeAttraction("Kopiec Kościuszki", catHistory.Id, 50.0547, 19.8958, "al. Waszyngtona, Kraków", 200);
+        kopiec.AddTag(tagOutdoor); kopiec.AddTag(tagViewpoint); kopiec.AddTag(tagHistory); kopiec.AddTag(tagFamily);
+
+        // Reguła zimowa: listopad–luty tylko w weekendy 9:30–15:30.
+        // Priority wyższy niż ruleWeekdaysOnly/ruleWeekend, żeby w tym okresie nadpisać reguły całoroczne.
+        var ruleKopiecZima = new RuleDefinition(
+            Guid.Parse("30000000-0000-0000-0000-000000000010"),
+            RuleType.Seasonal, RuleEffect.Allow, 50,
+            new TimeOnly(9, 30), new TimeOnly(15, 30),
+            new DateOnly(2025, 11, 1), new DateOnly(2026, 2, 28));
+        ruleKopiecZima.AddDay(new DayOfWeekEntry(Guid.NewGuid(), "Saturday"));
+        ruleKopiecZima.AddDay(new DayOfWeekEntry(Guid.NewGuid(), "Sunday"));
+        db.RuleDefinitions.Add(ruleKopiecZima);
+        kopiec.AddRule(ruleKopiecZima);
+
+        // Scenariusz 1 — sam wstęp na kopiec (nasyp + serpentyna + taras)
+        var kopS1 = MakeScenario(kopiec.Id, "Wejście na Kopiec",
+            "Serpentyna na szczyt nasypu z 1823 r. — panorama Krakowa z 326 m n.p.m. Wstęp na teren fortu w cenie.", 45);
+        kopS1.AddTag(tagOutdoor); kopS1.AddTag(tagViewpoint);
+        kopS1.Publish();
+
+        // Scenariusz 2 — Muzeum Kościuszki w podziemiach kaplicy
+        var kopS2 = MakeScenario(kopiec.Id, "Muzeum Kościuszki",
+            "Ekspozycja o insurekcji kościuszkowskiej i historii kopca. Ok. godziny zwiedzania, indoor.", 60);
+        kopS2.AddTag(tagIndoor); kopS2.AddTag(tagHistory); kopS2.AddTag(tagFamily);
+        kopS2.Publish();
+
+        // Scenariusz 3 — pełne zwiedzanie: kopiec + muzeum + kaplica + wały fortu
+        var kopS3 = MakeScenario(kopiec.Id, "Pełne zwiedzanie kompleksu",
+            "Kopiec + Muzeum Kościuszki + kaplica bł. Bronisławy + spacer po wałach XIX-wiecznego fortu austriackiego.", 150);
+        kopS3.AddTag(tagOutdoor); kopS3.AddTag(tagIndoor); kopS3.AddTag(tagViewpoint);
+        kopS3.AddTag(tagHistory); kopS3.AddTag(tagReligion); kopS3.AddTag(tagGuided);
+        kopS3.Publish();
+
+        // Scenariusz 4 — wejście z przewodnikiem (na życzenie, grupy)
+        var kopS4 = MakeScenario(kopiec.Id, "Zwiedzanie z przewodnikiem",
+            "Grupowe zwiedzanie kompleksu z przewodnikiem opowiadającym o Kościuszce i historii kopca.", 120);
+        kopS4.AddTag(tagGuided); kopS4.AddTag(tagHistory);
+        kopS4.Publish();
+
+        kopiec.Publish(); attractions.Add(kopiec);
 
         // 16
         var lotnicze = MakeAttraction("Muzeum Lotnictwa Polskiego", catMuseum.Id, 50.0796, 19.9762, "al. Jana Pawła II 39, Kraków", 300);
@@ -390,7 +429,7 @@ public static class DataSeeder
         var allScenarios = new[]
         {
             wawelS1, sukS1, collS1, schS1, wielS1, ausS1, florS1, nHS1, kazS1, smoS1,
-            mnkS1, czartS1, marS1, lagS1, kopS1, lotS1, zooS1, planS1, bloS1, lasS1,
+            mnkS1, czartS1, marS1, lagS1, kopS1, kopS2, kopS3, kopS4, lotS1, zooS1, planS1, bloS1, lasS1,
             tynS1, ojcS1, pieS1, jcS1, kalS1, wadS1, lipS1, hutS1, szlS1, fortS1,
             rynS1, podS1, wisS1, teatS1, mocakS1, kwS1, bochS1, korzS1, mogS1, rezS1,
             mizS1, etnoS1, bulS1, ratS1, ojcZS1, decS1, paulS1, botS1, wspS1, cemS1
