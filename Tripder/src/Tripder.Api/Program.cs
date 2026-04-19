@@ -22,6 +22,7 @@ if (app.Environment.IsDevelopment())
     using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     await DataSeeder.SeedAsync(db);
+    await OjcowskiParkSeeder.SeedAsync(db);
 }
 
 if (app.Environment.IsDevelopment())
